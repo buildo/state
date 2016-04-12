@@ -63,7 +63,7 @@ export default function connect(select = identity, {
   const isTypeSelect = isValidType(select);
 
   const decorator = Component => {
-    const displayName = `connect(${Component.displayName || Component.name})`;
+    const displayName = `connect(${Component.displayName || Component.name || 'Component'})`;
 
     const isValidState = filterValid && isTypeSelect ? v => {
       const invalid = [];

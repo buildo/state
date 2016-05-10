@@ -9,12 +9,21 @@ import t from 'tcomb';
 
 const log = debug('state:run');
 
-function createProvideWrapper({ stateSubject, getPendingState, setPendingState, syncToBrowser }) {
+// export for tests
+export function createProvideWrapper({ stateSubject, getPendingState, setPendingState, syncToBrowser }) {
+  const queue = [];
+
   const transition = _transitionFn => {
+    if (getPendingState()) {
+      queue.push(_transitionFn);
+      log('transition: enqueing this transition', _transitionFn);
+      return;
+    }
+
     const isTransitionFunction = t.Function.is(_transitionFn);
     const transitionFn = isTransitionFunction ? _transitionFn : () => _transitionFn;
 
-    const state = getPendingState() || stateSubject.getValue();
+    const state = stateSubject.value;
     const patch = transitionFn(state);
 
     const shouldReplace = isTransitionFunction;
@@ -27,10 +36,11 @@ function createProvideWrapper({ stateSubject, getPendingState, setPendingState, 
     }
 
     if (!shallowEqual(state, newState)) {
-      setPendingState(newState);
       const wroteToRouter = syncToBrowser(state, newState);
       if (!wroteToRouter) {
         stateSubject.next(newState);
+      } else {
+        setPendingState(newState);
       }
     }
   };
@@ -46,6 +56,19 @@ function createProvideWrapper({ stateSubject, getPendingState, setPendingState, 
       return this.props.children();
     }
   }
+
+  // this subscription is (one of) the first
+  // i.e. every connected component will receive updates after this
+  // ...meaning decisions taken before `transition` time become risky
+  // in presence of other interleaving transitions
+  //
+  // you can always make choices at `transition` time
+  // using the `transition(State => State)` form
+  stateSubject.subscribe(() => {
+    if (queue.length > 0) {
+      transition(queue.shift());
+    }
+  });
 
   return { ProvideWrapper, transition };
 }
@@ -144,11 +167,12 @@ export default function run({
   onBrowserChange((renderElement: t.Function, fromRouter: t.Object) => {
     if (_newState) {
       log('Router.run: user initiated');
-      state.next(transitionReducer(mergeStateAndBrowserState(_newState, fromRouter)));
-      _newState = undefined;
+      const newState = transitionReducer(mergeStateAndBrowserState(_newState, fromRouter));
+      _newState = null;
+      state.next(newState);
     } else {
       log('Router.run: browser initiated');
-      state.next(transitionReducer(mergeStateAndBrowserState(state.getValue(), fromRouter)));
+      state.next(transitionReducer(mergeStateAndBrowserState(state.value, fromRouter)));
     }
     /* eslint-disable react/display-name */
     render(

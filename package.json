@@ -4,15 +4,27 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/buildo/state.git"
   },
   "author": "Giovanni Gonzaga <giovanni@buildo.io>",
+  "license": "ISC",
   "bugs": {
     "url": "https://github.com/buildo/state/issues"
   },
-  "homepage": "https://github.com/buildo/state#readme"
+  "homepage": "https://github.com/buildo/state#readme",
+  "devDependencies": {
+    "babel": "^5.8.38",
+    "expect": "^1.20.1",
+    "lodash": "^4.11.2",
+    "mocha": "^2.4.5",
+    "react": "^0.14.8",
+    "require-dir": "^0.3.0",
+    "rxjs": "^5.0.0-beta.2",
+    "sinon": "^1.17.4",
+    "tcomb": "^3.0.0"
+  }
 }

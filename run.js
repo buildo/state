@@ -1,6 +1,7 @@
 import React from 'react';
 import debug from 'debug';
 import identity from 'lodash/identity';
+import find from 'lodash/find';
 import { BehaviorSubject } from 'rxjs/subject/BehaviorSubject';
 import { ConnectContextTypes } from './connect';
 import shallowEqual from './shallowEqual';
@@ -12,16 +13,34 @@ const log = debug('state:run');
 // export for tests
 export function createProvideWrapper({ stateSubject, getPendingState, setPendingState, syncToBrowser }) {
   const queue = [];
+  let lastTransitionId;
 
-  const transition = _transitionFn => {
+  // variadic:
+  // (id: String, tr: Tr) => void
+  // or
+  // (tr: Tr) => void
+  //
+  // where Tr is `t.Object | t.Function([t.Object], t.Object)`
+  const transition = (...args) => {
+    const id = args.length === 2 ? t.String(args[0]) : undefined;
     if (getPendingState()) {
-      queue.push(_transitionFn);
-      log('transition: enqueing this transition', _transitionFn);
+      const shouldBeSkipped = !!id && (
+        lastTransitionId === id || !!find(queue, args => args.length === 2 && args[0] === id)
+      );
+      if (!shouldBeSkipped) {
+        queue.push(args);
+        log('transition: enqueing this transition:', args);
+      } else {
+        log(`transition: skipping transition '${id}'`);
+      }
       return;
     }
+    log('transition:', args);
+    lastTransitionId = id;
 
+    const _transitionFn = args.length === 2 ? args[1] : args[0];
     const isTransitionFunction = t.Function.is(_transitionFn);
-    const transitionFn = isTransitionFunction ? _transitionFn : () => _transitionFn;
+    const transitionFn = isTransitionFunction ? _transitionFn : () => t.Object(_transitionFn);
 
     const state = stateSubject.value;
     const patch = transitionFn(state);
@@ -72,8 +91,9 @@ export function createProvideWrapper({ stateSubject, getPendingState, setPending
   // using the `transition(State => State)` form
   stateSubject.subscribe(() => {
     if (queue.length > 0) {
-      // log('running queued transition');
-      transition(queue.shift());
+      const args = queue.shift();
+      log('running queued transition', args);
+      transition(...args);
     }
   });
 

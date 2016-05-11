@@ -240,20 +240,17 @@ describe('run', () => {
         }, 50);
       }));
 
-      it.skip('many flattened', () => new Promise((resolve, reject) => {
+      it('many flattened', () => new Promise((resolve, reject) => {
 
         const { states, render, syncToBrowser, onBrowserChange, transition } = prepareRun({ foo: true });
 
-        const backflip = [
-          'backflip',
-          s => s.foo ? { ...s, foo: false, bar: 'baz', more: 1 } : { ...s, foo: true, bar: null }
-        ];
+        const backflip = s => s.foo ? { ...s, foo: false, bar: 'baz', more: 1 } : { ...s, foo: true, bar: null };
 
-        transition(...backflip);
-        transition(...backflip);
-        transition(...backflip);
-        transition(...backflip);
-        transition(...backflip);
+        transition('backflip', backflip);
+        transition('backflip', backflip);
+        transition('backflip', backflip);
+        transition('backflip', backflip);
+        transition('backflip', backflip);
 
         setTimeout(() => {
           expect(onBrowserChange.callCount).toBe(1);

@@ -15,7 +15,7 @@ const prepareTransition = ({ initialState = {}, syncToBrowser = () => true } = {
     setPendingState: () => {},
     syncToBrowser
   });
-  return { transition, states: () => states };
+  return { transition, states };
 }
 
 describe('transition', () => {
@@ -25,7 +25,7 @@ describe('transition', () => {
     const { transition, states } = prepareTransition({ initialState: { foo: 'bar' } });
     transition({ foo: 'bar' });
 
-    expect(states()).toEqual([{ foo: 'bar' }]);
+    expect(states).toEqual([{ foo: 'bar' }]);
 
     resolve();
   }));
@@ -35,7 +35,7 @@ describe('transition', () => {
     const { transition, states } = prepareTransition();
     transition({ foo: 'bar' });
 
-    expect(states()).toEqual([{}]);
+    expect(states).toEqual([{}]);
 
     resolve();
   }));
@@ -45,7 +45,7 @@ describe('transition', () => {
     const { transition, states } = prepareTransition({ syncToBrowser: () => false });
     transition({ foo: 'bar' });
 
-    expect(states()).toEqual([{}, { foo: 'bar' }]);
+    expect(states).toEqual([{}, { foo: 'bar' }]);
 
     resolve();
   }));
@@ -61,7 +61,7 @@ describe('transition', () => {
     transition({ bar: 'baz' });
 
     expect(syncToBrowser.callCount).toBe(2);
-    expect(states()).toEqual([{}, { foo: 'bar' }]);
+    expect(states).toEqual([{}, { foo: 'bar' }]);
 
     resolve();
   }));

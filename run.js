@@ -26,6 +26,8 @@ export function createProvideWrapper({ stateSubject, getPendingState, setPending
     const state = stateSubject.value;
     const patch = transitionFn(state);
 
+    // log('state is:', state);
+    // log('patch is:', patch);
     const shouldReplace = isTransitionFunction;
     const newState = shouldReplace ? { ...patch } : { ...state, ...patch };
 
@@ -35,11 +37,15 @@ export function createProvideWrapper({ stateSubject, getPendingState, setPending
       }
     }
 
-    if (!shallowEqual(state, newState)) {
+    const stateChanged = !shallowEqual(state, newState);
+    // log('new state is:', newState, stateChanged ? '(changed)' : 'NO CHANGE');
+    if (stateChanged) {
       const wroteToRouter = syncToBrowser(state, newState);
       if (!wroteToRouter) {
+        // log(`didn't write to router, nexting newState`);
         stateSubject.next(newState);
       } else {
+        // log(`wrote to router, setting pendingState`);
         setPendingState(newState);
       }
     }
@@ -66,6 +72,7 @@ export function createProvideWrapper({ stateSubject, getPendingState, setPending
   // using the `transition(State => State)` form
   stateSubject.subscribe(() => {
     if (queue.length > 0) {
+      // log('running queued transition');
       transition(queue.shift());
     }
   });
@@ -87,7 +94,7 @@ export default function run({
   // sync a change to the browser
   // should return true if a change to browser was pushed
   //
-  // (state: Object) => Boolean
+  // (oldState: Object, newState: Object) => wrote: Boolean
   //
   syncToBrowser, // required
 
@@ -166,12 +173,12 @@ export default function run({
 
   onBrowserChange((renderElement: t.Function, fromRouter: t.Object) => {
     if (_newState) {
-      log('Router.run: user initiated');
+      log('browser change: user initiated');
       const newState = transitionReducer(mergeStateAndBrowserState(_newState, fromRouter));
       _newState = null;
       state.next(newState);
     } else {
-      log('Router.run: browser initiated');
+      log('browser change: browser initiated');
       state.next(transitionReducer(mergeStateAndBrowserState(state.value, fromRouter)));
     }
     /* eslint-disable react/display-name */
@@ -184,4 +191,7 @@ export default function run({
   });
 
   init(state, transition);
+
+  // return for tests
+  return transition;
 }

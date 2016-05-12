@@ -11,9 +11,17 @@ import t from 'tcomb';
 const log = debug('state:run');
 
 // export for tests
-export function createProvideWrapper({ stateSubject, getPendingState, setPendingState, syncToBrowser }) {
+export function createProvideWrapper({ stateSubject, getPendingState, setPendingState, syncToBrowser, transitionReducer }) {
   const queue = [];
   let lastTransitionId;
+
+  const maybeRunQueuedTransition = () => {
+    if (queue.length > 0) {
+      const args = queue.shift();
+      log('running queued transition', args);
+      transition(...args);
+    }
+  };
 
   // variadic:
   // (id: String, tr: Tr) => void
@@ -23,18 +31,23 @@ export function createProvideWrapper({ stateSubject, getPendingState, setPending
   // where Tr is `t.Object | t.Function([t.Object], t.Object)`
   const transition = (...args) => {
     const id = args.length === 2 ? t.String(args[0]) : undefined;
-    if (getPendingState()) {
-      const shouldBeSkipped = !!id && (
-        lastTransitionId === id || !!find(queue, args => args.length === 2 && args[0] === id)
-      );
-      if (!shouldBeSkipped) {
-        queue.push(args);
-        log('transition: enqueing this transition:', args);
-      } else {
-        log(`transition: skipping transition '${id}'`);
-      }
+
+    const shouldBeSkipped = !!id && (
+      lastTransitionId === id || !!find(queue, args => args.length === 2 && args[0] === id)
+    );
+
+    if (shouldBeSkipped) {
+      log(`transition: skipping transition '${id}'`);
       return;
     }
+
+    if (getPendingState()) {
+      queue.push(args);
+      log('transition: enqueing this transition:', args);
+      // log('transition queue:', queue);
+      return;
+    }
+
     log('transition:', args);
     lastTransitionId = id;
 
@@ -48,7 +61,7 @@ export function createProvideWrapper({ stateSubject, getPendingState, setPending
     // log('state is:', state);
     // log('patch is:', patch);
     const shouldReplace = isTransitionFunction;
-    const newState = shouldReplace ? { ...patch } : { ...state, ...patch };
+    const newState = transitionReducer(shouldReplace ? { ...patch } : { ...state, ...patch });
 
     for (const k in patch) { // eslint-disable-line no-loops/no-loops
       if (t.Nil.is(patch[k])) {
@@ -67,6 +80,8 @@ export function createProvideWrapper({ stateSubject, getPendingState, setPending
         // log(`wrote to router, setting pendingState`);
         setPendingState(newState);
       }
+    } else {
+      maybeRunQueuedTransition();
     }
   };
 
@@ -89,13 +104,7 @@ export function createProvideWrapper({ stateSubject, getPendingState, setPending
   //
   // you can always make choices at `transition` time
   // using the `transition(State => State)` form
-  stateSubject.subscribe(() => {
-    if (queue.length > 0) {
-      const args = queue.shift();
-      log('running queued transition', args);
-      transition(...args);
-    }
-  });
+  stateSubject.subscribe(maybeRunQueuedTransition);
 
   return { ProvideWrapper, transition };
 }
@@ -185,7 +194,8 @@ export default function run({
   const { ProvideWrapper, transition } = createProvideWrapper({
     stateSubject: state, syncToBrowser,
     getPendingState: () => _newState,
-    setPendingState: s => { _newState = s; }
+    setPendingState: s => { _newState = s; },
+    transitionReducer
   });
 
 
@@ -194,12 +204,12 @@ export default function run({
   onBrowserChange((renderElement: t.Function, fromRouter: t.Object) => {
     if (_newState) {
       log('browser change: user initiated');
-      const newState = transitionReducer(mergeStateAndBrowserState(_newState, fromRouter));
+      const newState = mergeStateAndBrowserState(_newState, fromRouter);
       _newState = null;
       state.next(newState);
     } else {
       log('browser change: browser initiated');
-      state.next(transitionReducer(mergeStateAndBrowserState(state.value, fromRouter)));
+      state.next(mergeStateAndBrowserState(state.value, fromRouter));
     }
     /* eslint-disable react/display-name */
     render(
@@ -209,6 +219,8 @@ export default function run({
     );
     /* eslint-enable react/display-name */
   });
+
+  transition('start', initialState);
 
   init(state, transition);
 

@@ -13,7 +13,8 @@ const prepareTransition = ({ initialState = {}, syncToBrowser = () => true } = {
     stateSubject,
     getPendingState: () => undefined,
     setPendingState: () => {},
-    syncToBrowser
+    syncToBrowser,
+    transitionReducer: v => v
   });
   return { transition, states };
 }

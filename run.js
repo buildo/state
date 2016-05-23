@@ -11,16 +11,32 @@ import t from 'tcomb';
 const log = debug('state:run');
 
 // export for tests
-export function createProvideWrapper({ stateSubject, getPendingState, setPendingState, syncToBrowser, transitionReducer }) {
+export function createProvideWrapper({
+  stateSubject, getPendingState, setPendingState, syncToBrowser, transitionReducer, flushTimeoutMSec
+}) {
   const queue = [];
   let lastTransitionId;
+  let flushTimeout;
 
   const maybeRunQueuedTransition = () => {
     if (queue.length > 0) {
-      const args = queue.shift();
+      const { args } = queue.shift();
       log('running queued transition', args);
       transition(...args);
     }
+  };
+
+  const updateFlushTimeout = () => {
+    if (flushTimeout) {
+      clearTimeout(flushTimeout);
+    }
+    flushTimeout = setTimeout(() => {
+      if (queue.length > 0 && queue[0].time < Date.now() - flushTimeoutMSec) {
+        setPendingState(null);
+        maybeRunQueuedTransition();
+        updateFlushTimeout();
+      };
+    }, 500);
   };
 
   // variadic:
@@ -33,7 +49,7 @@ export function createProvideWrapper({ stateSubject, getPendingState, setPending
     const id = args.length === 2 ? t.String(args[0]) : undefined;
 
     const shouldBeSkipped = !!id && (
-      lastTransitionId === id || !!find(queue, args => args.length === 2 && args[0] === id)
+      lastTransitionId === id || !!find(queue, ({ args }) => args.length === 2 && args[0] === id)
     );
 
     if (shouldBeSkipped) {
@@ -42,8 +58,9 @@ export function createProvideWrapper({ stateSubject, getPendingState, setPending
     }
 
     if (getPendingState()) {
-      queue.push(args);
       log('transition: enqueing this transition:', args);
+      queue.push({ args, time: Date.now() });
+      updateFlushTimeout();
       // log('transition queue:', queue);
       return;
     }
@@ -185,17 +202,26 @@ export default function run({
   //
   // (state: Rx.Subject, transition: Function) => void
   //
-  init = () => {}
+  init = () => {},
+
+  // force next transition even if pending state
+  // is not yet applied after `flushTimeoutMsec`
+  //
+  // Number
+  //
+  flushTimeoutMSec = 300
 }) {
   const state = new BehaviorSubject(initialState);
   state.subscribe(subscribe);
   let _newState;
 
   const { ProvideWrapper, transition } = createProvideWrapper({
-    stateSubject: state, syncToBrowser,
+    stateSubject: state,
+    syncToBrowser,
     getPendingState: () => _newState,
     setPendingState: s => { _newState = s; },
-    transitionReducer
+    transitionReducer,
+    flushTimeoutMSec
   });
 
 

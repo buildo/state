@@ -236,6 +236,10 @@ export default function run({
     } else {
       log('browser change: browser initiated');
       state.next(mergeStateAndBrowserState(state.value, fromRouter));
+      // push a dummy transition
+      // so that `transitionReducer` can run
+      // will be diffed away if there's nothing to be done
+      transition({});
     }
     /* eslint-disable react/display-name */
     render(

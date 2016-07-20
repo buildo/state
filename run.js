@@ -235,7 +235,7 @@ export default function run({
       state.next(newState);
     } else {
       log('browser change: browser initiated');
-      state.next(mergeStateAndBrowserState(state.value, fromRouter));
+      state.next(transitionReducer(mergeStateAndBrowserState(state.value, fromRouter)));
       // push a dummy transition
       // so that `transitionReducer` can run
       // will be diffed away if there's nothing to be done

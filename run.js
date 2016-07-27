@@ -250,8 +250,6 @@ export default function run({
     /* eslint-enable react/display-name */
   });
 
-  transition('start', initialState);
-
   init(state, transition);
 
   // return for tests

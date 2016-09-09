@@ -2,7 +2,7 @@ import React from 'react';
 import debug from 'debug';
 import identity from 'lodash/identity';
 import find from 'lodash/find';
-import { BehaviorSubject } from 'rxjs/subject/BehaviorSubject';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { ConnectContextTypes } from './connect';
 import shallowEqual from './shallowEqual';
 import mkContextWrapper from './mkContextWrapper';

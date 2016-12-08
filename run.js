@@ -230,7 +230,7 @@ export default function run({
   onBrowserChange((renderElement: t.Function, fromRouter: t.Object) => {
     if (_newState) {
       log('browser change: user initiated');
-      const newState = mergeStateAndBrowserState(_newState, fromRouter);
+      const newState = transitionReducer(mergeStateAndBrowserState(_newState, fromRouter));
       _newState = null;
       state.next(newState);
     } else {

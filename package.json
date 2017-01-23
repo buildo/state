@@ -2,7 +2,6 @@
   "name": "buildo-state",
   "version": "0.2.0",
   "description": "State container for react apps with provider and connect HOCs",
-  "main": "lib/index.js",
   "scripts": {
     "test": "jest",
     "lint": "eslint src",

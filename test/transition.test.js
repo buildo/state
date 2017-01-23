@@ -1,7 +1,6 @@
-import expect from 'expect';
 import sinon from 'sinon';
-import { BehaviorSubject } from 'rxjs/subject/BehaviorSubject';
-import { createProvideWrapper } from '../../run';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { createProvideWrapper } from '../src/run';
 
 const prepareTransition = ({ initialState = {}, syncToBrowser = () => true } = {}) => {
   const stateSubject = new BehaviorSubject(initialState);

@@ -22,7 +22,7 @@ export function createProvideWrapper({
     if (queue.length > 0) {
       const { args } = queue.shift();
       log('running queued transition', args);
-      transition(...args);
+      transition(...args); // eslint-disable-line no-use-before-define
     }
   };
 
@@ -35,7 +35,7 @@ export function createProvideWrapper({
         setPendingState(null);
         maybeRunQueuedTransition();
         updateFlushTimeout();
-      };
+      }
     }, flushTimeoutMSec);
   };
 

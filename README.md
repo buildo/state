@@ -1,0 +1,1 @@
+[![Build Status](https://drone.our.buildo.io/api/badges/buildo/state/status.svg)](https://drone.our.buildo.io/buildo/state)

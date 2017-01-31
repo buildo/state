@@ -1,6 +1,11 @@
 #  Change Log
 
+## [Unreleased](https://github.com/buildo/state/tree/HEAD)
+[Full Changelog](https://github.com/buildo/state/compare/v0.3.0...HEAD)
 
+#### New features:
+
+- explicity declare rxjs as a dependency [#13](https://github.com/buildo/state/issues/13)
 
 ## [v0.3.0](https://github.com/buildo/state/tree/v0.3.0) (2017-01-23)
 [Full Changelog](https://github.com/buildo/state/compare/v0.2.0...v0.3.0)

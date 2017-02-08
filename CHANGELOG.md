@@ -1,7 +1,16 @@
 #  Change Log
 
-## [Unreleased](https://github.com/buildo/state/tree/HEAD)
-[Full Changelog](https://github.com/buildo/state/compare/v0.3.0...HEAD)
+
+
+## [v0.4.0](https://github.com/buildo/state/tree/v0.4.0) (2017-02-08)
+[Full Changelog](https://github.com/buildo/state/compare/v0.3.1...v0.4.0)
+
+#### Breaking:
+
+- add a way to decide what should be serialized to the browser [#15](https://github.com/buildo/state/issues/15)
+
+## [v0.3.1](https://github.com/buildo/state/tree/v0.3.1) (2017-01-31)
+[Full Changelog](https://github.com/buildo/state/compare/v0.3.0...v0.3.1)
 
 #### New features:
 

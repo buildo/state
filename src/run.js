@@ -2,6 +2,9 @@ import React from 'react';
 import debug from 'debug';
 import identity from 'lodash/identity';
 import find from 'lodash/find';
+import difference from 'lodash/difference';
+import pickBy from 'lodash/pickBy';
+import omitBy from 'lodash/omitBy';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { ConnectContextTypes } from './connect';
 import shallowEqual from './shallowEqual';
@@ -126,6 +129,8 @@ export function createProvideWrapper({
   return { ProvideWrapper, transition };
 }
 
+const mergeStateAndBrowserState = (s, b) => omitBy({ ...s, ...b }, t.Nil.is);
+
 export default function run({
   // final render
   // could be something like:
@@ -182,12 +187,6 @@ export default function run({
   //
   transitionReducer = identity,
 
-  // merge current state and new browser state
-  //
-  // (state: Object, browserState: Object) => Object
-  //
-  mergeStateAndBrowserState = (s, b) => ({ ...s, ...b }),
-
   // subscribe to every state change
   // ...in case you need it
   //
@@ -209,7 +208,13 @@ export default function run({
   //
   // Number
   //
-  flushTimeoutMSec = 200
+  flushTimeoutMSec = 200,
+
+  // whether to serialize (sync to browser) a state key or not
+  //
+  // (key: String) => Boolean
+  //
+  shouldSerializeKey = () => true
 }) {
   const state = new BehaviorSubject(initialState);
   state.subscribe(subscribe);
@@ -217,7 +222,14 @@ export default function run({
 
   const { ProvideWrapper, transition } = createProvideWrapper({
     stateSubject: state,
-    syncToBrowser,
+    syncToBrowser: (oldState, newState) => {
+      const oldSerialized = pickBy(oldState, (_, k) => shouldSerializeKey(k));
+      const newSerialized = pickBy(newState, (_, k) => shouldSerializeKey(k));
+      if (process.env.NODE_ENV === 'development') {
+        log('syncing to browser, omitted:', difference(Object.keys(newState), Object.keys(newSerialized)));
+      }
+      return syncToBrowser(oldSerialized, newSerialized);
+    },
     getPendingState: () => _newState,
     setPendingState: s => { _newState = s; },
     transitionReducer,

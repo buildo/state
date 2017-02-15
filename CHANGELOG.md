@@ -2,6 +2,13 @@
 
 
 
+## [v0.4.1](https://github.com/buildo/state/tree/v0.4.1) (2017-02-15)
+[Full Changelog](https://github.com/buildo/state/compare/v0.4.0...v0.4.1)
+
+#### New features:
+
+- remove `compomentWillMount` in favor of state initializer + `componentDidMount` [#17](https://github.com/buildo/state/issues/17)
+
 ## [v0.4.0](https://github.com/buildo/state/tree/v0.4.0) (2017-02-08)
 [Full Changelog](https://github.com/buildo/state/compare/v0.3.1...v0.4.0)
 

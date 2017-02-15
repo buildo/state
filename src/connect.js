@@ -84,12 +84,17 @@ export default function connect(select = identity, {
 
       static displayName = displayName;
 
-      constructor(props) {
-        super(props);
-        this.state = {};
+      constructor(props, context) {
+        super(props, context);
+        const value = context.state.value;
+        if (isValidState(value)) {
+          this.state = filterKeys(value);
+        } else {
+          this.state = {};
+        }
       }
 
-      componentWillMount() {
+      componentDidMount() {
         this._subscription = this.context.state::filter(isValidState)::map(filterKeys).subscribe(::this.setState);
       }
 

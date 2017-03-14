@@ -2,6 +2,14 @@
 
 
 
+## [v0.4.2](https://github.com/buildo/state/tree/v0.4.2) (2017-03-14)
+[Full Changelog](https://github.com/buildo/state/compare/v0.4.1...v0.4.2)
+
+#### New features:
+
+- update rxjs dep [#21](https://github.com/buildo/state/issues/21)
+- backport babel-preset-buildo [#19](https://github.com/buildo/state/issues/19)
+
 ## [v0.4.1](https://github.com/buildo/state/tree/v0.4.1) (2017-02-15)
 [Full Changelog](https://github.com/buildo/state/compare/v0.4.0...v0.4.1)
 

@@ -4,7 +4,8 @@
   "description": "State container for react apps with provider and connect HOCs",
   "scripts": {
     "test": "jest",
-    "lint": "eslint src",
+    "lint": "scriptoni lint src test",
+    "lint-fix": "scriptoni lint src test --fix",
     "release-version": "smooth-release",
     "preversion": "npm run lint",
     "prepublish": "npm run build",
@@ -25,12 +26,10 @@
   },
   "devDependencies": {
     "babel-cli": "^6.22.2",
-    "babel-eslint": "^7.1.1",
     "babel-preset-buildo": "^0.1.1",
-    "eslint": "^3.14.0",
-    "eslint-config-buildo": "^0.2.0",
     "jest": "^18.1.0",
     "react": "^0.14.8",
+    "scriptoni": "^0.4.3",
     "sinon": "^1.17.4",
     "smooth-release": "^6.0.0",
     "tcomb": "^3.0.0"

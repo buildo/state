@@ -43,14 +43,14 @@ const prepareRun = (initialState) => {
       callbackFromBrowser(state);
     },
     transition
-  }
+  };
 };
 
 describe('run', () => {
 
   describe('should work in a typical scenario', () => {
 
-    xit('init', () => new Promise((resolve, reject) => {
+    xit('init', () => new Promise((resolve) => {
 
       const { states, render, syncToBrowser, onBrowserChange, startBrowser } = prepareRun();
 
@@ -70,7 +70,7 @@ describe('run', () => {
       resolve();
     }));
 
-    it('transition', () => new Promise((resolve, reject) => {
+    it('transition', () => new Promise((resolve) => {
 
       const { states, render, syncToBrowser, onBrowserChange, transition } = prepareRun({ foo: 'bar' });
 
@@ -99,7 +99,7 @@ describe('run', () => {
 
     describe('multiple transitions', () => {
 
-      it('incremental', () => new Promise((resolve, reject) => {
+      it('incremental', () => new Promise((resolve) => {
 
         const { states, render, syncToBrowser, onBrowserChange, transition } = prepareRun({ a: 1 });
 
@@ -140,7 +140,7 @@ describe('run', () => {
         });
       }));
 
-      it('backflip', () => new Promise((resolve, reject) => {
+      it('backflip', () => new Promise((resolve) => {
 
         const { states, render, syncToBrowser, onBrowserChange, transition } = prepareRun({ foo: 'bar' });
 
@@ -182,7 +182,7 @@ describe('run', () => {
         });
       }));
 
-      it('many', () => new Promise((resolve, reject) => {
+      it('many', () => new Promise((resolve) => {
 
         const { states, render, syncToBrowser, onBrowserChange, transition } = prepareRun({ foo: 1 });
 
@@ -211,7 +211,7 @@ describe('run', () => {
         }, 50);
       }));
 
-      it('many backflips', () => new Promise((resolve, reject) => {
+      it('many backflips', () => new Promise((resolve) => {
 
         const { states, render, syncToBrowser, onBrowserChange, transition } = prepareRun({ foo: true });
 
@@ -233,14 +233,14 @@ describe('run', () => {
             { foo: true, more: 1 },
             { foo: false, bar: 'baz', more: 1 },
             { foo: true, more: 1 },
-            { foo: false, bar: 'baz', more: 1 },
+            { foo: false, bar: 'baz', more: 1 }
           ]);
 
           resolve();
         }, 50);
       }));
 
-      it('many flattened', () => new Promise((resolve, reject) => {
+      it('many flattened', () => new Promise((resolve) => {
 
         const { states, render, syncToBrowser, onBrowserChange, transition } = prepareRun({ foo: true });
 

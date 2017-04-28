@@ -16,11 +16,11 @@ const prepareTransition = ({ initialState = {}, syncToBrowser = () => true } = {
     transitionReducer: v => v
   });
   return { transition, states };
-}
+};
 
 describe('transition', () => {
 
-  it('should do nothing if there is no state diff', () => new Promise((resolve, reject) => {
+  it('should do nothing if there is no state diff', () => new Promise((resolve) => {
 
     const { transition, states } = prepareTransition({ initialState: { foo: 'bar' } });
     transition({ foo: 'bar' });
@@ -30,7 +30,7 @@ describe('transition', () => {
     resolve();
   }));
 
-  it('should not push to state synchronously if there is a browser diff', () => new Promise((resolve, reject) => {
+  it('should not push to state synchronously if there is a browser diff', () => new Promise((resolve) => {
 
     const { transition, states } = prepareTransition();
     transition({ foo: 'bar' });
@@ -40,7 +40,7 @@ describe('transition', () => {
     resolve();
   }));
 
-  it('should push to state synchronously if there is no browser diff', () => new Promise((resolve, reject) => {
+  it('should push to state synchronously if there is no browser diff', () => new Promise((resolve) => {
 
     const { transition, states } = prepareTransition({ syncToBrowser: () => false });
     transition({ foo: 'bar' });
@@ -50,7 +50,7 @@ describe('transition', () => {
     resolve();
   }));
 
-  it('should not syncToBrowser synchronously multiple transitions after a browser diff', () => new Promise((resolve, reject) => {
+  it('should not syncToBrowser synchronously multiple transitions after a browser diff', () => new Promise((resolve) => {
 
     const syncToBrowser = sinon.stub();
     syncToBrowser.onCall(0).returns(false);

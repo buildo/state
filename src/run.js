@@ -15,7 +15,7 @@ const log = debug('state:run');
 
 // export for tests
 export function createProvideWrapper({
-  stateSubject, getPendingState, setPendingState, syncToBrowser, transitionReducer, flushTimeoutMSec
+  stateSubject, getPendingState, setPendingState, syncToBrowser, transitionReducer, flushTimeoutMSec, State = t.interface({}, { name: 'Generic Interface Not Strict', strict: false })
 }) {
   const queue = [];
   let lastTransitionId;
@@ -89,6 +89,9 @@ export function createProvideWrapper({
       }
     }
 
+    console.log({ State, newState }, State.is(newState));
+    t.assert(State.is(newState), `impossible to validate new state ${newState}`);
+
     const stateChanged = !shallowEqual(state, newState);
     // log('new state is:', newState, stateChanged ? '(changed)' : 'NO CHANGE');
     if (stateChanged) {
@@ -140,6 +143,7 @@ export default function run({
   //
   // (element: ReactElement) => void
   //
+  State,
   render, // required
 
   // sync a change to the browser
@@ -221,6 +225,7 @@ export default function run({
   let _newState;
 
   const { ProvideWrapper, transition } = createProvideWrapper({
+    State,
     stateSubject: state,
     syncToBrowser: (oldState, newState) => {
       const oldSerialized = pickBy(oldState, (_, k) => shouldSerializeKey(k));

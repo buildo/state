@@ -1,6 +1,7 @@
 import sinon from 'sinon';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { createProvideWrapper } from '../src/run';
+import t from 'tcomb';
 
 const prepareTransition = ({ initialState = {}, syncToBrowser = () => true } = {}) => {
   const stateSubject = new BehaviorSubject(initialState);
@@ -13,7 +14,11 @@ const prepareTransition = ({ initialState = {}, syncToBrowser = () => true } = {
     getPendingState: () => undefined,
     setPendingState: () => {},
     syncToBrowser,
-    transitionReducer: v => v
+    transitionReducer: v => v,
+    stateType: t.interface({
+      foo: t.maybe(t.String),
+      bar: t.maybe(t.String)
+    }, 'AppState')
   });
   return { transition, states };
 };

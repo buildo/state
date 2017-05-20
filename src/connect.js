@@ -4,7 +4,8 @@ import { filter } from 'rxjs/operator/filter';
 import { map } from 'rxjs/operator/map';
 import omit from 'lodash/omit';
 import identity from 'lodash/identity';
-import t, { isType } from 'tcomb';
+import pick from 'lodash/pick';
+import t from 'tcomb';
 import shallowEqual from './shallowEqual';
 
 const warn = debug('state:connect');
@@ -12,27 +13,13 @@ warn.log = ::console.warn; // eslint-disable-line no-console
 
 export const ConnectContextTypes = {
   transition: React.PropTypes.func.isRequired,
-  state: React.PropTypes.object.isRequired
+  state: React.PropTypes.object.isRequired,
+  stateType: React.PropTypes.func.isRequired
 };
 
-const isValidType = ty => {
-  if (!t.Object.is(ty)) {
-    return false;
-  }
-  const keys = Object.keys(ty);
-  return keys.map(k => ty[k]).filter(isType).length === keys.length;
-};
+const defaultPickKeys = ty => v => pick(v, ty);
 
-const filterForType = ty => v => Object.keys(ty).reduce((ac, k) => ({
-  ...ac,
-  [k]: v[k]
-}), {});
-
-// expects a select function
-// or type declaration in the form
-//
-// { key1: TcombType, ..., keyN: TcombType }
-//
+// expects a select function or a list of keys
 // and an optional configuration object
 export default function connect(select = identity, {
   // implement a standard shouldComponentUpdate with shallowEquals
@@ -60,24 +47,29 @@ export default function connect(select = identity, {
   //
   killProps = []
 } = {}) {
-  const isTypeSelect = isValidType(select);
+  const isKeyList = t.list(t.String).is(select);
+  if (!isKeyList && !t.Function.is(select)) {
+    throw new Error('connect expects a select function or a list of keys');
+  }
+  const stateType = this.context.stateType;
 
   const decorator = Component => {
     const displayName = `connect(${Component.displayName || Component.name || 'Component'})`;
 
-    const isValidState = filterValid && isTypeSelect ? v => {
-      const invalid = [];
-      for (const k in select) { // eslint-disable-line no-loops/no-loops
-        if (!select[k].is(v[k])) {
-          invalid.push(k);
+    const isValidState = filterValid && isKeyList ? v => {
+      const invalid = select.reduce((acc, k) => {
+        if (!stateType.meta.props.hasOwnProperty(k)) {
+          throw new Error(`${k} is not defined in state`);
         }
-      }
+        return !stateType.meta.props[k].is(v[k]) ? [...acc, k] : acc;
+      }, []);
+
       if (invalid.length > 0 && process.env.NODE_ENV === 'development') {
         warn(`Skipping update for ${displayName}. Invalid keys: ${invalid.join(', ')}`);
       }
       return invalid.length === 0;
     } : () => true;
-    const filterKeys = isTypeSelect ? filterForType(select) : select;
+    const pickKeys = isKeyList ? defaultPickKeys(select) : select;
 
     return class ConnectWrapper extends React.Component {
       static contextTypes = ConnectContextTypes
@@ -88,14 +80,14 @@ export default function connect(select = identity, {
         super(props, context);
         const value = context.state.value;
         if (isValidState(value)) {
-          this.state = filterKeys(value);
+          this.state = pickKeys(value);
         } else {
           this.state = {};
         }
       }
 
       componentDidMount() {
-        this._subscription = this.context.state::filter(isValidState)::map(filterKeys).subscribe(::this.setState);
+        this._subscription = this.context.state::filter(isValidState)::map(pickKeys).subscribe(::this.setState);
       }
 
       componentWillUnmount() {
@@ -122,8 +114,8 @@ export default function connect(select = identity, {
       }
     };
   };
-  if (isTypeSelect) {
-    decorator.Type = { ...select, transition: t.Function };
+  if (isKeyList) {
+    decorator.Type = { ...pick(stateType.meta.props, select), transition: t.Function };
   }
   return decorator;
 }

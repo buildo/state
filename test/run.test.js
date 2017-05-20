@@ -1,6 +1,7 @@
 import React from 'react';
 import sinon from 'sinon';
 import run from '../src/run';
+import t from 'tcomb';
 
 const prepareRun = (initialState) => {
   let _callback;
@@ -31,7 +32,15 @@ const prepareRun = (initialState) => {
     subscribe: state => {
       states.push(state);
     },
-    initialState
+    initialState,
+    stateType: t.interface({
+      foo: t.maybe(t.String),
+      bar: t.maybe(t.String),
+      a: t.maybe(t.Integer),
+      b: t.maybe(t.Integer),
+      baz: t.maybe(t.Boolean),
+      more: t.maybe(t.Integer)
+    }, 'AppState')
   });
 
   return {
@@ -50,7 +59,7 @@ describe('run', () => {
 
   describe('should work in a typical scenario', () => {
 
-    xit('init', () => new Promise((resolve) => {
+    it('init', () => new Promise((resolve) => {
 
       const { states, render, syncToBrowser, onBrowserChange, startBrowser } = prepareRun();
 
@@ -184,9 +193,9 @@ describe('run', () => {
 
       it('many', () => new Promise((resolve) => {
 
-        const { states, render, syncToBrowser, onBrowserChange, transition } = prepareRun({ foo: 1 });
+        const { states, render, syncToBrowser, onBrowserChange, transition } = prepareRun({ a: 1 });
 
-        const incFoo = s => ({ ...s, foo: s.foo + 1 });
+        const incFoo = s => ({ ...s, a: s.a + 1 });
 
         transition(incFoo);
         transition(incFoo);
@@ -199,23 +208,22 @@ describe('run', () => {
           expect(syncToBrowser.callCount).toBe(5);
           expect(render.callCount).toBe(5);
           expect(states).toEqual([
-            { foo: 1 },
-            { foo: 2 },
-            { foo: 3 },
-            { foo: 4 },
-            { foo: 5 },
-            { foo: 6 }
+            { a: 1 },
+            { a: 2 },
+            { a: 3 },
+            { a: 4 },
+            { a: 5 },
+            { a: 6 }
           ]);
 
           resolve();
         }, 50);
       }));
 
-      it('many backflips', () => new Promise((resolve) => {
+      it('many backflips', () => new Promise((resolve, reject) => {
+        const { states, render, syncToBrowser, onBrowserChange, transition } = prepareRun({ baz: true });
 
-        const { states, render, syncToBrowser, onBrowserChange, transition } = prepareRun({ foo: true });
-
-        const backflip = s => s.foo ? { ...s, foo: false, bar: 'baz', more: 1 } : { ...s, foo: true, bar: null };
+        const backflip = s => s.baz ? { ...s, baz: false, bar: 'baz', more: 1 } : { ...s, baz: true, bar: null };
 
         transition(backflip);
         transition(backflip);
@@ -224,27 +232,30 @@ describe('run', () => {
         transition(backflip);
 
         setTimeout(() => {
-          expect(onBrowserChange.callCount).toBe(1);
-          expect(syncToBrowser.callCount).toBe(5);
-          expect(render.callCount).toBe(5);
-          expect(states).toEqual([
-            { foo: true },
-            { foo: false, bar: 'baz', more: 1 },
-            { foo: true, more: 1 },
-            { foo: false, bar: 'baz', more: 1 },
-            { foo: true, more: 1 },
-            { foo: false, bar: 'baz', more: 1 }
-          ]);
-
-          resolve();
+          try {
+            expect(onBrowserChange.callCount).toBe(1);
+            expect(syncToBrowser.callCount).toBe(5);
+            expect(render.callCount).toBe(5);
+            expect(states).toEqual([
+              { baz: true },
+              { baz: false, bar: 'baz', more: 1 },
+              { baz: true, more: 1 },
+              { baz: false, bar: 'baz', more: 1 },
+              { baz: true, more: 1 },
+              { baz: false, bar: 'baz', more: 1 }
+            ]);
+            resolve();
+          } catch (e) {
+            reject(e);
+          }
         }, 50);
       }));
 
       it('many flattened', () => new Promise((resolve) => {
 
-        const { states, render, syncToBrowser, onBrowserChange, transition } = prepareRun({ foo: true });
+        const { states, render, syncToBrowser, onBrowserChange, transition } = prepareRun({ baz: true });
 
-        const backflip = s => s.foo ? { ...s, foo: false, bar: 'baz', more: 1 } : { ...s, foo: true, bar: null };
+        const backflip = s => s.baz ? { ...s, baz: false, bar: 'baz', more: 1 } : { ...s, baz: true, bar: null };
 
         transition('backflip', backflip);
         transition('backflip', backflip);
@@ -257,8 +268,8 @@ describe('run', () => {
           expect(syncToBrowser.callCount).toBe(1);
           expect(render.callCount).toBe(1);
           expect(states).toEqual([
-            { foo: true },
-            { foo: false, bar: 'baz', more: 1 }
+            { baz: true },
+            { baz: false, bar: 'baz', more: 1 }
           ]);
 
           resolve();

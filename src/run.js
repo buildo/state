@@ -15,7 +15,7 @@ const log = debug('state:run');
 
 // export for tests
 export function createProvideWrapper({
-  stateSubject, getPendingState, setPendingState, syncToBrowser, transitionReducer, flushTimeoutMSec
+  stateSubject, stateType, getPendingState, setPendingState, syncToBrowser, transitionReducer, flushTimeoutMSec
 }) {
   const queue = [];
   let lastTransitionId;
@@ -81,13 +81,10 @@ export function createProvideWrapper({
     // log('state is:', state);
     // log('patch is:', patch);
     const shouldReplace = isTransitionFunction;
-    const newState = transitionReducer(shouldReplace ? { ...patch } : { ...state, ...patch });
-
-    for (const k in patch) { // eslint-disable-line no-loops/no-loops
-      if (t.Nil.is(patch[k])) {
-        delete newState[k];
-      }
-    }
+    const newState = stateType(pickBy(
+      transitionReducer(shouldReplace ? { ...patch } : { ...state, ...patch }),
+      x => !t.Nil.is(x)
+    ));
 
     const stateChanged = !shallowEqual(state, newState);
     // log('new state is:', newState, stateChanged ? '(changed)' : 'NO CHANGE');
@@ -109,7 +106,7 @@ export function createProvideWrapper({
     static childContextTypes = ConnectContextTypes
 
     getChildContext = () => ({
-      transition, state: stateSubject
+      transition, state: stateSubject, stateType
     })
 
     render() {
@@ -175,6 +172,8 @@ export default function run({
   //
   provideContextTypes = {},
 
+  stateType = t.irreducible('MissingStateType', () => false),
+
   // initial state
   //
   // Object
@@ -216,12 +215,14 @@ export default function run({
   //
   shouldSerializeKey = () => true
 }) {
-  const state = new BehaviorSubject(initialState);
+
+  const state = new BehaviorSubject(stateType(initialState));
   state.subscribe(subscribe);
   let _newState;
 
   const { ProvideWrapper, transition } = createProvideWrapper({
     stateSubject: state,
+    stateType,
     syncToBrowser: (oldState, newState) => {
       const oldSerialized = pickBy(oldState, (_, k) => shouldSerializeKey(k));
       const newSerialized = pickBy(newState, (_, k) => shouldSerializeKey(k));

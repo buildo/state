@@ -116,7 +116,7 @@ export default function connect(select = identity, {
           transition: this.context.transition
         };
         return (
-          <Component {...props}/>
+          <Component {...props} />
         );
       }
     };

@@ -18,7 +18,7 @@ const prepareTransition = ({ initialState = {}, syncToBrowser = () => true } = {
     stateType: t.interface({
       foo: t.maybe(t.String),
       bar: t.maybe(t.String)
-    }, 'AppState')
+    }, { name: 'AppState', strict: true })
   });
   return { transition, states };
 };
@@ -70,5 +70,27 @@ describe('transition', () => {
 
     resolve();
   }));
+
+  it('should throw if it evaluates to a state with a key of invalid type', () => {
+
+    const { transition } = prepareTransition({ syncToBrowser: () => false });
+    const invalidTransition = () => {
+      transition({ foo: 'bar', bar: 2 });
+    };
+
+    expect(invalidTransition).toThrow();
+
+  });
+
+  it('should throw if it evaluates to a state with an extraneous key', () => {
+
+    const { transition } = prepareTransition({ syncToBrowser: () => false });
+    const invalidTransition = () => {
+      transition({ foo: 'bar', barb: 'foo' });
+    };
+
+    expect(invalidTransition).toThrow();
+
+  });
 
 });

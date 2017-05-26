@@ -1,9 +1,9 @@
-import connectFactory from '../src/connect';
+import stateInit from '../src';
 import t from 'tcomb';
 
 describe('connect', () => {
 
-  const connect = connectFactory(t.interface({
+  const { connect } = stateInit(t.interface({
     foo: t.String
   }, { name: 'AppState', strict: true }));
 

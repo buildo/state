@@ -1,6 +1,6 @@
 import React from 'react';
 import sinon from 'sinon';
-import run from '../src/run';
+import stateInit from '../src';
 import t from 'tcomb';
 
 const prepareRun = (initialState) => {
@@ -34,7 +34,9 @@ const prepareRun = (initialState) => {
     more: t.maybe(t.Integer)
   }, 'AppState');
 
-  const transition = run(stateType)({
+  const { run } = stateInit(stateType);
+
+  const transition = run({
     render,
     syncToBrowser,
     onBrowserChange,

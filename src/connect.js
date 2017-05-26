@@ -11,10 +11,6 @@ import shallowEqual from './shallowEqual';
 const warn = debug('state:connect');
 warn.log = ::console.warn; // eslint-disable-line no-console
 
-const isStrictInterface = (x) => {
-  return t.isType(x) && (x.meta.kind === 'interface') && (x.meta.strict === false);
-};
-
 export const ConnectContextTypes = {
   transition: React.PropTypes.func.isRequired,
   state: React.PropTypes.object.isRequired,
@@ -56,9 +52,6 @@ export default function connect(select = identity, {
     throw new Error('connect expects a select function or a list of keys');
   }
   const stateType = this.context.stateType;
-  if (!isStrictInterface(stateType)) {
-    throw new Error('`stateType` must be a strict tcomb interface');
-  }
 
   const decorator = Component => {
     const displayName = `connect(${Component.displayName || Component.name || 'Component'})`;

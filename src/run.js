@@ -128,6 +128,10 @@ export function createProvideWrapper({
 
 const mergeStateAndBrowserState = (s, b) => omitBy({ ...s, ...b }, t.Nil.is);
 
+const isStrictInterface = (x) => {
+  return t.isType(x) && (x.meta.kind === 'interface') && (x.meta.strict === false);
+};
+
 export default function run({
   // final render
   // could be something like:
@@ -172,7 +176,7 @@ export default function run({
   //
   provideContextTypes = {},
 
-  stateType = t.irreducible('MissingStateType', () => false),
+  stateType,
 
   // initial state
   //
@@ -215,6 +219,10 @@ export default function run({
   //
   shouldSerializeKey = () => true
 }) {
+
+  if (!isStrictInterface(stateType)) {
+    throw new Error('`stateType` must be a strict tcomb interface');
+  }
 
   const state = new BehaviorSubject(stateType(initialState));
   state.subscribe(subscribe);

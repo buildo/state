@@ -25,22 +25,23 @@ const prepareRun = (initialState) => {
   };
   const states = [];
 
-  const transition = run({
+  const stateType = t.interface({
+    foo: t.maybe(t.String),
+    bar: t.maybe(t.String),
+    a: t.maybe(t.Integer),
+    b: t.maybe(t.Integer),
+    baz: t.maybe(t.Boolean),
+    more: t.maybe(t.Integer)
+  }, 'AppState');
+
+  const transition = run(stateType)({
     render,
     syncToBrowser,
     onBrowserChange,
     subscribe: state => {
       states.push(state);
     },
-    initialState,
-    stateType: t.interface({
-      foo: t.maybe(t.String),
-      bar: t.maybe(t.String),
-      a: t.maybe(t.Integer),
-      b: t.maybe(t.Integer),
-      baz: t.maybe(t.Boolean),
-      more: t.maybe(t.Integer)
-    }, 'AppState')
+    initialState
   });
 
   return {

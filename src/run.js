@@ -106,7 +106,7 @@ export function createProvideWrapper({
     static childContextTypes = ConnectContextTypes
 
     getChildContext = () => ({
-      transition, state: stateSubject, stateType
+      transition, state: stateSubject
     })
 
     render() {
@@ -132,7 +132,7 @@ const isStrictInterface = (x) => {
   return t.isType(x) && (x.meta.kind === 'interface') && (x.meta.strict === false);
 };
 
-export default function run({
+export default stateType => ({
   // final render
   // could be something like:
   // element => {
@@ -176,8 +176,6 @@ export default function run({
   //
   provideContextTypes = {},
 
-  stateType,
-
   // initial state
   //
   // Object
@@ -218,7 +216,7 @@ export default function run({
   // (key: String) => Boolean
   //
   shouldSerializeKey = () => true
-}) {
+}) => {
 
   if (!isStrictInterface(stateType)) {
     throw new Error('`stateType` must be a strict tcomb interface');
@@ -275,4 +273,4 @@ export default function run({
 
   // return for tests
   return transition;
-}
+};

@@ -13,15 +13,14 @@ warn.log = ::console.warn; // eslint-disable-line no-console
 
 export const ConnectContextTypes = {
   transition: React.PropTypes.func.isRequired,
-  state: React.PropTypes.object.isRequired,
-  stateType: React.PropTypes.func.isRequired
+  state: React.PropTypes.object.isRequired
 };
 
 const defaultPickKeys = ty => v => pick(v, ty);
 
 // expects a select function or a list of keys
 // and an optional configuration object
-export default function connect(select = identity, {
+export default stateType => (select = identity, {
   // implement a standard shouldComponentUpdate with shallowEquals
   // do not use on non-pure components, e.g. react-router `RouteHandler`s
   //
@@ -46,21 +45,26 @@ export default function connect(select = identity, {
   // Array<String>
   //
   killProps = []
-} = {}) {
+} = {}) => {
+
   const isKeyList = t.list(t.String).is(select);
   if (!isKeyList && !t.Function.is(select)) {
     throw new Error('connect expects a select function or a list of keys');
   }
-  const stateType = this.context.stateType;
+
+  select.forEach(k => {
+    if (!stateType.meta.props.hasOwnProperty(k)) {
+      throw new Error(`${k} is not defined in state`);
+    }
+  });
 
   const decorator = Component => {
     const displayName = `connect(${Component.displayName || Component.name || 'Component'})`;
 
-    const isValidState = filterValid && isKeyList ? v => {
+    const pickKeys = isKeyList ? defaultPickKeys(select) : select;
+
+    const shouldUpdateState = filterValid && isKeyList ? v => {
       const invalid = select.reduce((acc, k) => {
-        if (!stateType.meta.props.hasOwnProperty(k)) {
-          throw new Error(`${k} is not defined in state`);
-        }
         return !stateType.meta.props[k].is(v[k]) ? [...acc, k] : acc;
       }, []);
 
@@ -69,7 +73,6 @@ export default function connect(select = identity, {
       }
       return invalid.length === 0;
     } : () => true;
-    const pickKeys = isKeyList ? defaultPickKeys(select) : select;
 
     return class ConnectWrapper extends React.Component {
       static contextTypes = ConnectContextTypes
@@ -79,7 +82,7 @@ export default function connect(select = identity, {
       constructor(props, context) {
         super(props, context);
         const value = context.state.value;
-        if (isValidState(value)) {
+        if (shouldUpdateState(value)) {
           this.state = pickKeys(value);
         } else {
           this.state = {};
@@ -87,7 +90,7 @@ export default function connect(select = identity, {
       }
 
       componentDidMount() {
-        this._subscription = this.context.state::filter(isValidState)::map(pickKeys).subscribe(::this.setState);
+        this._subscription = this.context.state::filter(shouldUpdateState)::map(pickKeys).subscribe(::this.setState);
       }
 
       componentWillUnmount() {
@@ -118,4 +121,4 @@ export default function connect(select = identity, {
     decorator.Type = { ...pick(stateType.meta.props, select), transition: t.Function };
   }
   return decorator;
-}
+};

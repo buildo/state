@@ -79,6 +79,10 @@ describe('run', () => {
       resolve();
     }));
 
+    it('should throw if initialState is invalid', () => {
+      expect(() => prepareRun({ foo: 1 })).toThrow();
+    });
+
     it('transition', () => new Promise((resolve) => {
 
       const { states, render, syncToBrowser, onBrowserChange, transition } = prepareRun({ foo: 'bar' });

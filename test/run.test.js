@@ -82,6 +82,13 @@ describe('run', () => {
       resolve();
     }));
 
+    fit('should throw if stateType is invalid', () => {
+      expect(() => stateInit()).toThrow();
+      expect(() => stateInit({})).toThrow();
+      expect(() => stateInit(t.struct({}))).toThrow();
+      expect(() => stateInit(t.interface({}, { strict: false }))).toThrowError('`stateType` must be a strict tcomb interface');
+    });
+
     it('should throw if initialState is invalid', () => {
       expect(() => prepareRun({ foo: 1 })).toThrow();
     });

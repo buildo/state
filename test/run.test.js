@@ -32,7 +32,7 @@ const prepareRun = (initialState) => {
     b: t.maybe(t.Integer),
     baz: t.maybe(t.Boolean),
     more: t.maybe(t.Integer)
-  }, 'AppState');
+  }, { name: 'AppState', strict: true });
 
   const { run } = stateInit(stateType);
 
@@ -82,7 +82,7 @@ describe('run', () => {
       resolve();
     }));
 
-    fit('should throw if stateType is invalid', () => {
+    it('should throw if stateType is invalid', () => {
       expect(() => stateInit()).toThrow();
       expect(() => stateInit({})).toThrow();
       expect(() => stateInit(t.struct({}))).toThrow();

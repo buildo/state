@@ -16,7 +16,10 @@ export const ConnectContextTypes = {
   state: React.PropTypes.object.isRequired
 };
 
-const defaultPickKeys = ty => v => pick(v, ty);
+const defaultGetNewState = ty => v => ty.reduce((acc, key) => ({
+  ...acc,
+  [key]: v[key]
+}), {});
 
 // expects a select function or a list of keys
 // and an optional configuration object
@@ -61,7 +64,7 @@ export default stateType => (select = identity, {
   const decorator = Component => {
     const displayName = `connect(${Component.displayName || Component.name || 'Component'})`;
 
-    const pickKeys = isKeyList ? defaultPickKeys(select) : select;
+    const getNewState = isKeyList ? defaultGetNewState(select) : select;
 
     const shouldUpdateState = filterValid && isKeyList ? v => {
       const invalid = select.reduce((acc, k) => {
@@ -83,14 +86,14 @@ export default stateType => (select = identity, {
         super(props, context);
         const value = context.state.value;
         if (shouldUpdateState(value)) {
-          this.state = pickKeys(value);
+          this.state = getNewState(value);
         } else {
           this.state = {};
         }
       }
 
       componentDidMount() {
-        this._subscription = this.context.state::filter(shouldUpdateState)::map(pickKeys).subscribe(::this.setState);
+        this._subscription = this.context.state::filter(shouldUpdateState)::map(getNewState).subscribe(::this.setState);
       }
 
       componentWillUnmount() {

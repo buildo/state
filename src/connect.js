@@ -21,9 +21,11 @@ const defaultGetNewState = ty => v => ty.reduce((acc, key) => ({
   [key]: v[key]
 }), {});
 
+// global state tcomb type
+export default stateType =>
 // expects a select function or a list of keys
 // and an optional configuration object
-export default stateType => (select = identity, {
+(select = identity, {
   // implement a standard shouldComponentUpdate with shallowEquals
   // do not use on non-pure components, e.g. react-router `RouteHandler`s
   //

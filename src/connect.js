@@ -57,11 +57,13 @@ export default stateType =>
     throw new Error('connect expects a select function or a list of keys');
   }
 
-  select.forEach(k => {
-    if (!stateType.meta.props.hasOwnProperty(k)) {
-      throw new Error(`${k} is not defined in state`);
-    }
-  });
+  if (isKeyList) {
+    select.forEach(k => {
+      if (!stateType.meta.props.hasOwnProperty(k)) {
+        throw new Error(`${k} is not defined in state`);
+      }
+    });
+  }
 
   const decorator = Component => {
     const displayName = `connect(${Component.displayName || Component.name || 'Component'})`;

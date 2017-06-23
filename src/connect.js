@@ -4,7 +4,8 @@ import { filter } from 'rxjs/operator/filter';
 import { map } from 'rxjs/operator/map';
 import omit from 'lodash/omit';
 import identity from 'lodash/identity';
-import t, { isType } from 'tcomb';
+import pick from 'lodash/pick';
+import t from 'tcomb';
 import shallowEqual from './shallowEqual';
 
 const warn = debug('state:connect');
@@ -15,26 +16,16 @@ export const ConnectContextTypes = {
   state: React.PropTypes.object.isRequired
 };
 
-const isValidType = ty => {
-  if (!t.Object.is(ty)) {
-    return false;
-  }
-  const keys = Object.keys(ty);
-  return keys.map(k => ty[k]).filter(isType).length === keys.length;
-};
-
-const filterForType = ty => v => Object.keys(ty).reduce((ac, k) => ({
-  ...ac,
-  [k]: v[k]
+const defaultGetNewState = ty => v => ty.reduce((acc, key) => ({
+  ...acc,
+  [key]: v[key]
 }), {});
 
-// expects a select function
-// or type declaration in the form
-//
-// { key1: TcombType, ..., keyN: TcombType }
-//
+// global state tcomb type
+export default stateType =>
+// expects a select function or a list of keys
 // and an optional configuration object
-export default function connect(select = identity, {
+(select = identity, {
   // implement a standard shouldComponentUpdate with shallowEquals
   // do not use on non-pure components, e.g. react-router `RouteHandler`s
   //
@@ -59,25 +50,36 @@ export default function connect(select = identity, {
   // Array<String>
   //
   killProps = []
-} = {}) {
-  const isTypeSelect = isValidType(select);
+} = {}) => {
+
+  const isKeyList = t.list(t.String).is(select);
+  if (!isKeyList && !t.Function.is(select)) {
+    throw new Error('connect expects a select function or a list of keys');
+  }
+
+  if (isKeyList) {
+    select.forEach(k => {
+      if (!stateType.meta.props.hasOwnProperty(k)) {
+        throw new Error(`${k} is not defined in state`);
+      }
+    });
+  }
 
   const decorator = Component => {
     const displayName = `connect(${Component.displayName || Component.name || 'Component'})`;
 
-    const isValidState = filterValid && isTypeSelect ? v => {
-      const invalid = [];
-      for (const k in select) { // eslint-disable-line no-loops/no-loops
-        if (!select[k].is(v[k])) {
-          invalid.push(k);
-        }
-      }
+    const getNewState = isKeyList ? defaultGetNewState(select) : select;
+
+    const shouldUpdateState = filterValid && isKeyList ? v => {
+      const invalid = select.reduce((acc, k) => {
+        return !stateType.meta.props[k].is(v[k]) ? [...acc, k] : acc;
+      }, []);
+
       if (invalid.length > 0 && process.env.NODE_ENV === 'development') {
         warn(`Skipping update for ${displayName}. Invalid keys: ${invalid.join(', ')}`);
       }
       return invalid.length === 0;
     } : () => true;
-    const filterKeys = isTypeSelect ? filterForType(select) : select;
 
     return class ConnectWrapper extends React.Component {
       static contextTypes = ConnectContextTypes
@@ -87,15 +89,15 @@ export default function connect(select = identity, {
       constructor(props, context) {
         super(props, context);
         const value = context.state.value;
-        if (isValidState(value)) {
-          this.state = filterKeys(value);
+        if (shouldUpdateState(value)) {
+          this.state = getNewState(value);
         } else {
           this.state = {};
         }
       }
 
       componentDidMount() {
-        this._subscription = this.context.state::filter(isValidState)::map(filterKeys).subscribe(::this.setState);
+        this._subscription = this.context.state::filter(shouldUpdateState)::map(getNewState).subscribe(::this.setState);
       }
 
       componentWillUnmount() {
@@ -117,13 +119,13 @@ export default function connect(select = identity, {
           transition: this.context.transition
         };
         return (
-          <Component {...props}/>
+          <Component {...props} />
         );
       }
     };
   };
-  if (isTypeSelect) {
-    decorator.Type = { ...select, transition: t.Function };
+  if (isKeyList) {
+    decorator.Type = { ...pick(stateType.meta.props, select), transition: t.Function };
   }
   return decorator;
-}
+};

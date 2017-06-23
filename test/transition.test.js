@@ -1,6 +1,7 @@
 import sinon from 'sinon';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { createProvideWrapper } from '../src/run';
+import t from 'tcomb';
 
 const prepareTransition = ({ initialState = {}, syncToBrowser = () => true } = {}) => {
   const stateSubject = new BehaviorSubject(initialState);
@@ -13,7 +14,11 @@ const prepareTransition = ({ initialState = {}, syncToBrowser = () => true } = {
     getPendingState: () => undefined,
     setPendingState: () => {},
     syncToBrowser,
-    transitionReducer: v => v
+    transitionReducer: v => v,
+    stateType: t.interface({
+      foo: t.maybe(t.String),
+      bar: t.maybe(t.String)
+    }, { name: 'AppState', strict: true })
   });
   return { transition, states };
 };
@@ -65,5 +70,27 @@ describe('transition', () => {
 
     resolve();
   }));
+
+  it('should throw if it evaluates to a state with a key of invalid type', () => {
+
+    const { transition } = prepareTransition({ syncToBrowser: () => false });
+    const invalidTransition = () => {
+      transition({ foo: 'bar', bar: 2 });
+    };
+
+    expect(invalidTransition).toThrow();
+
+  });
+
+  it('should throw if it evaluates to a state with an extraneous key', () => {
+
+    const { transition } = prepareTransition({ syncToBrowser: () => false });
+    const invalidTransition = () => {
+      transition({ foo: 'bar', barb: 'foo' });
+    };
+
+    expect(invalidTransition).toThrow();
+
+  });
 
 });

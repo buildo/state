@@ -2,6 +2,7 @@
   "name": "buildo-state",
   "version": "0.4.2",
   "description": "State container for react apps with provider and connect HOCs",
+  "main": "lib",
   "scripts": {
     "test": "jest",
     "lint": "scriptoni lint src test",

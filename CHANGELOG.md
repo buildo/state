@@ -2,6 +2,17 @@
 
 
 
+## [v0.5.0](https://github.com/buildo/state/tree/v0.5.0) (2017-06-23)
+[Full Changelog](https://github.com/buildo/state/compare/v0.4.2...v0.5.0)
+
+#### Breaking:
+
+- [poc] stato new api [#27](https://github.com/buildo/state/issues/27)
+
+#### New features:
+
+- use scriptoni for linting [#23](https://github.com/buildo/state/issues/23)
+
 ## [v0.4.2](https://github.com/buildo/state/tree/v0.4.2) (2017-03-14)
 [Full Changelog](https://github.com/buildo/state/compare/v0.4.1...v0.4.2)
 

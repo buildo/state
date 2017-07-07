@@ -2,6 +2,13 @@
 
 
 
+## [v0.5.1](https://github.com/buildo/state/tree/v0.5.1) (2017-07-07)
+[Full Changelog](https://github.com/buildo/state/compare/v0.5.0...v0.5.1)
+
+#### New features:
+
+- bump rxjs dep [#29](https://github.com/buildo/state/issues/29)
+
 ## [v0.5.0](https://github.com/buildo/state/tree/v0.5.0) (2017-06-23)
 [Full Changelog](https://github.com/buildo/state/compare/v0.4.2...v0.5.0)
 

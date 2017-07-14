@@ -13,6 +13,8 @@ import t from 'tcomb';
 
 const log = debug('state:run');
 
+const omitNils = s => omitBy(s, t.Nil.is);
+
 // export for tests
 export function createProvideWrapper({
   stateSubject, stateType, getPendingState, setPendingState, syncToBrowser, transitionReducer, flushTimeoutMSec
@@ -81,10 +83,9 @@ export function createProvideWrapper({
     // log('state is:', state);
     // log('patch is:', patch);
     const shouldReplace = isTransitionFunction;
-    const newState = stateType(pickBy(
-      transitionReducer(shouldReplace ? { ...patch } : { ...state, ...patch }),
-      x => !t.Nil.is(x)
-    ));
+    const newState = stateType(
+      transitionReducer(shouldReplace ? { ...patch } : { ...state, ...patch })
+    );
 
     const stateChanged = !shallowEqual(state, newState);
     // log('new state is:', newState, stateChanged ? '(changed)' : 'NO CHANGE');
@@ -126,7 +127,7 @@ export function createProvideWrapper({
   return { ProvideWrapper, transition };
 }
 
-const mergeStateAndBrowserState = (s, b) => omitBy({ ...s, ...b }, t.Nil.is);
+const mergeStateAndBrowserState = (s, b) => omitNils({ ...s, ...b });
 
 export default stateType => ({
   // final render
@@ -182,7 +183,7 @@ export default stateType => ({
   //
   // (state: Object) => Object
   //
-  transitionReducer = identity,
+  transitionReducer: _transitionReducer = identity,
 
   // subscribe to every state change
   // ...in case you need it
@@ -213,6 +214,8 @@ export default stateType => ({
   //
   shouldSerializeKey = () => true
 }) => {
+
+  const transitionReducer = s => omitNils(_transitionReducer(s));
 
   const state = new BehaviorSubject(stateType(initialState));
   state.subscribe(subscribe);

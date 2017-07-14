@@ -80,22 +80,22 @@ export function createProvideWrapper({
     const state = stateSubject.value;
     const patch = transitionFn(state);
 
-    // log('state is:', state);
-    // log('patch is:', patch);
+    log('state is:', state);
+    log('patch is:', patch);
     const shouldReplace = isTransitionFunction;
     const newState = stateType(
       transitionReducer(shouldReplace ? { ...patch } : { ...state, ...patch })
     );
 
     const stateChanged = !shallowEqual(state, newState);
-    // log('new state is:', newState, stateChanged ? '(changed)' : 'NO CHANGE');
+    log('new state is:', stateChanged ? '(changed)' : 'NO CHANGE', newState);
     if (stateChanged) {
       const wroteToRouter = syncToBrowser(state, newState);
       if (!wroteToRouter) {
-        // log(`didn't write to router, nexting newState`);
+        log('didn\'t write to router, nexting newState');
         stateSubject.next(newState);
       } else {
-        // log(`wrote to router, setting pendingState`);
+        log('wrote to router, setting pendingState');
         setPendingState(newState);
       }
     } else {

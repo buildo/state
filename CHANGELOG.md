@@ -2,6 +2,13 @@
 
 
 
+## [v0.6.0](https://github.com/buildo/state/tree/v0.6.0) (2017-07-14)
+[Full Changelog](https://github.com/buildo/state/compare/v0.5.1...v0.6.0)
+
+#### Breaking:
+
+- breaking: enforce omitByF(t.Nil.is) also for changes coming from browser [#31](https://github.com/buildo/state/issues/31)
+
 ## [v0.5.1](https://github.com/buildo/state/tree/v0.5.1) (2017-07-07)
 [Full Changelog](https://github.com/buildo/state/compare/v0.5.0...v0.5.1)
 

@@ -38,7 +38,7 @@ export function createProvideWrapper({
     flushTimeout = setTimeout(() => {
       if (queue.length > 0 && queue[0].time <= Date.now() - flushTimeoutMSec) {
         if (process.env.NODE_ENV !== 'production') {
-          console.warn('state:flushTimeout', 'flushTimeout expired! We probably were expecting an update from the router that did\'t call us instead :\'('); // eslint-disable-line no-console
+          console.warn('state:flushTimeout', 'flushTimeout expired! We probably were expecting an update from the router that didn\'t call us instead :\'('); // eslint-disable-line no-console
         }
         setPendingState(null);
         maybeRunQueuedTransition();

@@ -2,6 +2,14 @@
 
 
 
+## [v0.6.1](https://github.com/buildo/state/tree/v0.6.1) (2017-07-18)
+[Full Changelog](https://github.com/buildo/state/compare/v0.6.0...v0.6.1)
+
+#### New features:
+
+- treat `flushTimeoutMSec` as a "problem occuring" more than a "feature" [#33](https://github.com/buildo/state/issues/33)
+- try validate state after transition [#25](https://github.com/buildo/state/issues/25)
+
 ## [v0.6.0](https://github.com/buildo/state/tree/v0.6.0) (2017-07-14)
 [Full Changelog](https://github.com/buildo/state/compare/v0.5.1...v0.6.0)
 

@@ -37,6 +37,9 @@ export function createProvideWrapper({
     }
     flushTimeout = setTimeout(() => {
       if (queue.length > 0 && queue[0].time <= Date.now() - flushTimeoutMSec) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn('state:flushTimeout', 'flushTimeout expired! We probably were expecting an update from the router that didn\'t call us instead :\'('); // eslint-disable-line no-console
+        }
         setPendingState(null);
         maybeRunQueuedTransition();
         updateFlushTimeout();
@@ -206,7 +209,7 @@ export default stateType => ({
   //
   // Number
   //
-  flushTimeoutMSec = 200,
+  flushTimeoutMSec = 5000,
 
   // whether to serialize (sync to browser) a state key or not
   //
@@ -250,10 +253,6 @@ export default stateType => ({
     } else {
       log('browser change: browser initiated');
       state.next(transitionReducer(mergeStateAndBrowserState(state.value, fromRouter)));
-      // push a dummy transition
-      // so that `transitionReducer` can run
-      // will be diffed away if there's nothing else to be done
-      transition({ ___k: Math.random() });
     }
     /* eslint-disable react/display-name */
     render(

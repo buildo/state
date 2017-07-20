@@ -2,6 +2,13 @@
 
 
 
+## [v0.6.2](https://github.com/buildo/state/tree/v0.6.2) (2017-07-20)
+[Full Changelog](https://github.com/buildo/state/compare/v0.6.1...v0.6.2)
+
+#### Fixes (bugs & defects):
+
+- missing sync to browser after a browser-initiated browser change [#35](https://github.com/buildo/state/issues/35)
+
 ## [v0.6.1](https://github.com/buildo/state/tree/v0.6.1) (2017-07-18)
 [Full Changelog](https://github.com/buildo/state/compare/v0.6.0...v0.6.1)
 

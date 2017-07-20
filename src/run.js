@@ -246,13 +246,29 @@ export default stateType => ({
 
   onBrowserChange((renderElement: t.Function, fromRouter: t.Object) => {
     if (_newState) {
+      // we have a pending state, thus: this browser changed was initiated by us
+      // (via transition())
       log('browser change: user initiated');
       const newState = transitionReducer(mergeStateAndBrowserState(_newState, fromRouter));
       _newState = null;
       state.next(newState);
     } else {
       log('browser change: browser initiated');
-      state.next(transitionReducer(mergeStateAndBrowserState(state.value, fromRouter)));
+      const newState = mergeStateAndBrowserState(state.value, fromRouter);
+      // Raising hands. This is the current truth as the browser sees it.
+      // We currently have no way of intercepting a pushstate if it wasn't
+      // initiated by us (via transition).
+      // There's nothing we can do here, just accept this state as the current one.
+      // We need to push this first, even if it might be a state we don't like,
+      // otherwise `routerDiff` will be confused the next time (thinking the current
+      // router state is different from the real one).
+      state.next(newState);
+      // Anyway, since we might end up in a state we don't like
+      // (e.g.: in `login` view but with a `token`),
+      // run the current state through transition (and thus transitionReducer),
+      // in case there's something to be done
+      // (if this doesn't cause any more changes, it will just be diffed away)
+      transition(newState);
     }
     /* eslint-disable react/display-name */
     render(

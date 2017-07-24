@@ -17,6 +17,7 @@ export default stateType => {
   }, { strict: true, name: stateType.meta.name });
 
   return {
+    appState: StateType,
     run: run(StateType),
     connect: connect(StateType)
   };

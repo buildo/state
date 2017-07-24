@@ -2,6 +2,13 @@
 
 
 
+## [v0.6.3](https://github.com/buildo/state/tree/v0.6.3) (2017-07-24)
+[Full Changelog](https://github.com/buildo/state/compare/v0.6.2...v0.6.3)
+
+#### New features:
+
+- run should return the app state [#37](https://github.com/buildo/state/issues/37)
+
 ## [v0.6.2](https://github.com/buildo/state/tree/v0.6.2) (2017-07-20)
 [Full Changelog](https://github.com/buildo/state/compare/v0.6.1...v0.6.2)
 

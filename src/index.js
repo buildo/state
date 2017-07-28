@@ -1,5 +1,7 @@
 import run from './run';
 import connect from './connect';
+import parseParams from './parseParams';
+import stringifyParams from './stringifyParams';
 import t from 'tcomb';
 
 const isStrictInterface = (x) => {
@@ -19,6 +21,8 @@ export default stateType => {
   return {
     appState: StateType,
     run: run(StateType),
-    connect: connect(StateType)
+    connect: connect(StateType),
+    parseParams: parseParams(stateType),
+    stringifyParams
   };
 };

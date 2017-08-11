@@ -17,7 +17,7 @@ const booleanMap = {
 
 const parseBoolean = (value) => {
   const parsedValue = booleanMap[value];
-  if (value === void 0) {
+  if (parsedValue === void 0) {
     throw new Error(`${value} is not parsable as boolean`);
   }
   return parsedValue;

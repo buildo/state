@@ -10,7 +10,6 @@ import { ConnectContextTypes } from './connect';
 import shallowEqual from './shallowEqual';
 import mkContextWrapper from './mkContextWrapper';
 import parseParams from './parseParams';
-import stringifyParams from './stringifyParams';
 import t from 'tcomb';
 
 const log = debug('state:run');
@@ -95,7 +94,7 @@ export function createProvideWrapper({
     const stateChanged = !shallowEqual(state, newState);
     log('new state is:', stateChanged ? '(changed)' : 'NO CHANGE', newState);
     if (stateChanged) {
-      const wroteToRouter = syncToBrowser(stringifyParams(state), stringifyParams(newState));
+      const wroteToRouter = syncToBrowser(state, newState);
       if (!wroteToRouter) {
         log('didn\'t write to router, nexting newState');
         stateSubject.next(newState);

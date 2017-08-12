@@ -3,6 +3,16 @@ import sinon from 'sinon';
 import stateInit from '../src';
 import t from 'tcomb';
 
+const _setTimeout = (cb, ms, reject) => {
+  setTimeout(() => {
+    try {
+      cb();
+    } catch (e) {
+      reject(e);
+    }
+  }, ms);
+};
+
 const prepareRun = (initialState) => {
   let _callback;
   const callbackFromBrowser = state => {
@@ -93,7 +103,7 @@ describe('run', () => {
       expect(() => prepareRun({ foo: 1 })).toThrow();
     });
 
-    it('transition', () => new Promise((resolve) => {
+    it('transition', () => new Promise((resolve, reject) => {
 
       const { states, render, syncToBrowser, onBrowserChange, transition } = prepareRun({ foo: 'bar' });
 
@@ -111,19 +121,18 @@ describe('run', () => {
       // (syncToBrowser api is async!)
       expect(render.callCount).toBe(0);
       expect(states).toEqual([{ foo: 'bar' }]);
-      setTimeout(() => {
+      _setTimeout(() => {
         // next tick, yes
         expect(render.callCount).toBe(1);
         expect(states).toEqual([{ foo: 'bar' }, { foo: 'baz' }]);
-      });
+      }, 0, reject);
 
       resolve();
     }));
 
     describe('multiple transitions', () => {
 
-      it('incremental', () => new Promise((resolve) => {
-
+      it('incremental', () => new Promise((resolve, reject) => {
         const { states, render, syncToBrowser, onBrowserChange, transition } = prepareRun({ a: 1 });
 
         expect(onBrowserChange.callCount).toBe(1);
@@ -145,25 +154,25 @@ describe('run', () => {
         expect(render.callCount).toBe(0);
         expect(states).toEqual([{ a: 1 }]);
 
-        setTimeout(() => {
+        _setTimeout(() => {
           // next tick, yes (first transition comes in)
           expect(states).toEqual([{ a: 1 }, { a: 1, b: 1 }]);
           expect(render.callCount).toBe(1);
           // second is async writing to browser
           expect(syncToBrowser.callCount).toBe(2);
 
-          setTimeout(() => {
+          _setTimeout(() => {
             // next tick, both transitions are done
             expect(syncToBrowser.callCount).toBe(2);
             expect(states).toEqual([{ a: 1 }, { a: 1, b: 1 }, { a: 2, b: 1 }]);
             expect(render.callCount).toBe(2);
 
             resolve();
-          });
-        });
+          }, 0, reject);
+        }, 0, reject);
       }));
 
-      it('backflip', () => new Promise((resolve) => {
+      it('backflip', () => new Promise((resolve, reject) => {
 
         const { states, render, syncToBrowser, onBrowserChange, transition } = prepareRun({ foo: 'bar' });
 
@@ -187,25 +196,25 @@ describe('run', () => {
         expect(render.callCount).toBe(0);
         expect(states).toEqual([{ foo: 'bar' }]);
 
-        setTimeout(() => {
+        _setTimeout(() => {
           // next tick, yes (first transition comes in)
           expect(states).toEqual([{ foo: 'bar' }, { foo: 'baz' }]);
           expect(render.callCount).toBe(1);
           // second is async writing to browser
           expect(syncToBrowser.callCount).toBe(2);
 
-          setTimeout(() => {
+          _setTimeout(() => {
             // next tick, both transitions are done
             expect(syncToBrowser.callCount).toBe(2);
             expect(states).toEqual([{ foo: 'bar' }, { foo: 'baz' }, { foo: 'bar' }]);
             expect(render.callCount).toBe(2);
 
             resolve();
-          });
-        });
+          }, 0, reject);
+        }, 0, reject);
       }));
 
-      it('many', () => new Promise((resolve) => {
+      it('many', () => new Promise((resolve, reject) => {
 
         const { states, render, syncToBrowser, onBrowserChange, transition } = prepareRun({ a: 1 });
 
@@ -217,7 +226,7 @@ describe('run', () => {
         transition(incFoo);
         transition(incFoo);
 
-        setTimeout(() => {
+        _setTimeout(() => {
           expect(onBrowserChange.callCount).toBe(1);
           expect(syncToBrowser.callCount).toBe(5);
           expect(render.callCount).toBe(5);
@@ -231,7 +240,7 @@ describe('run', () => {
           ]);
 
           resolve();
-        }, 50);
+        }, 50, reject);
       }));
 
       it('many backflips', () => new Promise((resolve, reject) => {
@@ -245,7 +254,7 @@ describe('run', () => {
         transition(backflip);
         transition(backflip);
 
-        setTimeout(() => {
+        _setTimeout(() => {
           try {
             expect(onBrowserChange.callCount).toBe(1);
             expect(syncToBrowser.callCount).toBe(5);
@@ -262,10 +271,10 @@ describe('run', () => {
           } catch (e) {
             reject(e);
           }
-        }, 50);
+        }, 50, reject);
       }));
 
-      it('many flattened', () => new Promise((resolve) => {
+      it('many flattened', () => new Promise((resolve, reject) => {
 
         const { states, render, syncToBrowser, onBrowserChange, transition } = prepareRun({ baz: true });
 
@@ -277,7 +286,7 @@ describe('run', () => {
         transition('backflip', backflip);
         transition('backflip', backflip);
 
-        setTimeout(() => {
+        _setTimeout(() => {
           expect(onBrowserChange.callCount).toBe(1);
           expect(syncToBrowser.callCount).toBe(1);
           expect(render.callCount).toBe(1);
@@ -287,7 +296,7 @@ describe('run', () => {
           ]);
 
           resolve();
-        }, 50);
+        }, 50, reject);
       }));
 
     });

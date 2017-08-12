@@ -9,6 +9,7 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { ConnectContextTypes } from './connect';
 import shallowEqual from './shallowEqual';
 import mkContextWrapper from './mkContextWrapper';
+import parseParams from './parseParams';
 import t from 'tcomb';
 
 const log = debug('state:run');
@@ -245,16 +246,17 @@ export default stateType => ({
   const Provider = mkContextWrapper(provideContext, provideContextTypes);
 
   onBrowserChange((renderElement: t.Function, fromRouter: t.Object) => {
+    const parsedFromRoute = parseParams(stateType)(fromRouter);
     if (_newState) {
       // we have a pending state, thus: this browser changed was initiated by us
       // (via transition())
       log('browser change: user initiated');
-      const newState = transitionReducer(mergeStateAndBrowserState(_newState, fromRouter));
+      const newState = transitionReducer(mergeStateAndBrowserState(_newState, parsedFromRoute));
       _newState = null;
       state.next(newState);
     } else {
       log('browser change: browser initiated');
-      const newState = mergeStateAndBrowserState(state.value, fromRouter);
+      const newState = mergeStateAndBrowserState(state.value, parsedFromRoute);
       // Raising hands. This is the current truth as the browser sees it.
       // We currently have no way of intercepting a pushstate if it wasn't
       // initiated by us (via transition).

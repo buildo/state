@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`fulstack scenario 1 1`] = `
+<div>
+  {"view":"view1"}
+</div>
+`;
+
+exports[`fulstack scenario 1 2`] = `
+<div>
+  {"view":"view2"}
+</div>
+`;

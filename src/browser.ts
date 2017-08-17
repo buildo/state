@@ -11,7 +11,7 @@ export default function(history: History = createBrowserHistory()) {
   // there's only `view` which is the whole `pathname` from history perspective
 
   function syncToBrowser(s: BrowserState, push: boolean = true): void {
-    const pathname = `/${s.view}`;
+    const pathname = `/${s.view || ''}`;
     const search = `?${qs.stringify(omit(s, ['view']))}`;
     (push ? history.push : history.replace)({ pathname, search });
   }

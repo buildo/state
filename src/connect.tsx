@@ -92,9 +92,7 @@ export default function makeConnect<S extends ST>(stateType: t.Interface<S>): Co
       const getNewState = defaultGetNewState(decl);
 
       const shouldUpdateState = filterValid ? (v: S) => {
-        const invalid = decl.reduce((acc, k) => {
-          return !(stateType.meta.props[k] as t.Type<any>).is(v[k]) ? [...acc, k] : acc; // TODO(typo)
-        }, []);
+        const invalid = decl.filter(k => !(stateType.meta.props[k] as t.Type<any>).is(v[k])); // TODO(typo)
 
         if (invalid.length > 0 && process.env.NODE_ENV === 'development') {
           warn(`Skipping update for ${displayName}. Invalid keys: ${invalid.join(', ')}`);

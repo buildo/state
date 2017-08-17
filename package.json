@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/buildo/state#readme",
   "dependencies": {
+    "@types/history": "^4.6.0",
     "history": "^4.6.3",
     "lodash": "^4.17.4",
     "prop-types": "^15.5.10",
@@ -36,7 +37,6 @@
   },
   "devDependencies": {
     "@types/debug": "0.0.30",
-    "@types/history": "^4.6.0",
     "@types/jest": "^20.0.7",
     "@types/lodash": "^4.14.73",
     "@types/prop-types": "^15.5.1",

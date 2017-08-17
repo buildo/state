@@ -16,9 +16,9 @@ export default function(history: History = createBrowserHistory()) {
     (push ? history.push : history.replace)({ pathname, search });
   }
 
-  function parseBrowserState(location: typeof history.location): BrowserState {
-    const view = trim(location.pathname, ' /');
-    const s = qs.parse(location.search, { ignoreQueryPrefix: true });
+  function parseBrowserState(location?: typeof history.location): BrowserState {
+    const view = location ? trim(location.pathname, ' /') : '';
+    const s = location ? qs.parse(location.search, { ignoreQueryPrefix: true }) : {};
     return { ...s, view };
   }
 

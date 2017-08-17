@@ -4,13 +4,14 @@ import pickBy = require('lodash/pickBy');
 import omitBy = require('lodash/omitBy');
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { ConnectContextTypes } from './connect';
-import mkContextWrapper, { ProvideContext, ProvideContextTypes } from './mkContextWrapper';
+import mkContextWrapper, { ProvideContext, ProvideContextTypes } from './ContextWrapper';
 import mkTransition from './transition';
 import { TransitionFunction, TransitionFunctionFunction } from './transition';
 import * as t from 'tcomb';
 import mkBrowser, { BrowserState } from './browser';
-import { StateT } from './StateT';
+import { StateT, StateTcombType } from './StateT';
 import { History } from 'history';
+import { stringify as _stringify, parse as _parse, ParsedBrowserState } from './parser';
 
 declare var process: any; // TODO(typo)
 
@@ -21,7 +22,6 @@ const omitNils = <S extends StateT>(s: S) => omitBy<S, S>(s, t.Nil.is);
 export type StateContextWrapper = React.ComponentType<{}>;
 
 export type StateSubject<S extends StateT> = BehaviorSubject<S>;
-type StateTcombType<S extends StateT> = t.Interface<S>;
 
 export type RunParams<S extends StateT> = {
   initialState: S;
@@ -37,15 +37,15 @@ export type RunParams<S extends StateT> = {
 export type RunReturn = Promise<StateContextWrapper>;
 export type Run<S extends StateT> = (p: RunParams<S>) => RunReturn;
 
-function pickValidStateKeys<S extends StateT>(stateType: StateTcombType<S>, b: BrowserState): S {
-  return pickBy<S, BrowserState>(b, (v, k) => {
-    // TODO: parsing should be done here
+function parseAndPickValidStateKeys<S extends StateT>(stateType: StateTcombType<S>, b: BrowserState): S {
+  const parsed = _parse(stateType)(b);
+  return pickBy<S, ParsedBrowserState>(parsed, (v, k) => {
     return stateType.meta.props.hasOwnProperty(k) && (stateType.meta.props[k] as t.Type<any>).is(v);
   });
 }
 
 const mergeStateAndBrowserState = <S extends StateT>(stateType: StateTcombType<S>) => (s: S, b: BrowserState) =>
-  omitNils({ ...s as any, ...pickValidStateKeys(stateType, b) as any }) as S; // TODO(typo)
+  omitNils({ ...s as any, ...parseAndPickValidStateKeys(stateType, b) as any }) as S; // TODO(typo)
 
 const transitionReducerIdentity = <S extends StateT>(s: S) => s;
 
@@ -89,18 +89,18 @@ export default <S extends StateT>(stateType: StateTcombType<S>) => ({
 
     const { syncToBrowser, onBrowserChange } = mkBrowser(history);
 
+    const stringify = _stringify(stateType);
+
     const transition = mkTransition({
       stateSubject: state,
       stateType,
       syncToBrowser: (oldState, newState) => {
-        const newSerialized = pickBy<BrowserState, BrowserState>(newState, (_: any, k: keyof S) =>
-          shouldSerializeKey(k)
-        );
-        // TODO: serialization should be done here
+        const newSerialized = pickBy<S, S>(newState, (_: any, k) => shouldSerializeKey(k));
         if (process.env.NODE_ENV === 'development') {
           log('syncing to browser, omitted:', difference(Object.keys(newState), Object.keys(newSerialized)));
         }
-        return syncToBrowser(newSerialized, shouldBrowserPatchBePushedOrReplaced(oldState, newState));
+        const newStringified = stringify(newSerialized);
+        return syncToBrowser(newStringified, shouldBrowserPatchBePushedOrReplaced(oldState, newState));
       },
       transitionReducer
     });

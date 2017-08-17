@@ -30,14 +30,14 @@ function defaultGetNewState<S extends ST, Decl extends string>(ty: Decl[]) {
   }), {});
 }
 
-type ConnectConfig = {
+export type ConnectConfig = {
   pure?: true, filterValid?: true, killProps?: string[]
 }
-type ConnectedComponentProps<P extends {}, Decl extends string> = ObjectOmit<P, Decl | 'transition'>
-type ConnectedComponent<P extends {}, Decl extends string> = React.ComponentType<ConnectedComponentProps<P, Decl>>
-type DecoratedComponent<S extends ST, P extends {}> = React.ComponentType<P & { transition?: TransitionFunction<S> }>
-type ConnectDecorator<S extends ST, Decl extends keyof S> = <P>(C: DecoratedComponent<S, P>) => ConnectedComponent<P, Decl>
-type ConnectDeclaration<S extends ST, Decl extends keyof S> = ConnectDecorator<S, Decl> & ({
+export type ConnectedComponentProps<P extends {}, Decl extends string> = ObjectOmit<P, Decl | 'transition'>
+export type ConnectedComponent<P extends {}, Decl extends string> = React.ComponentType<ConnectedComponentProps<P, Decl>>
+export type DecoratedComponent<S extends ST, P extends {}> = React.ComponentType<P & { transition?: TransitionFunction<S> }>
+export type ConnectDecorator<S extends ST, Decl extends keyof S> = <P>(C: DecoratedComponent<S, P>) => ConnectedComponent<P, Decl>
+export type ConnectDeclaration<S extends ST, Decl extends keyof S> = ConnectDecorator<S, Decl> & ({
   Type: { [k in Decl]: t.Type<any> } & { transition: t.Function1 }
 })
 export type Connect<S extends ST> = <Decl extends keyof S>(decl: Decl[], config?: ConnectConfig) => ConnectDeclaration<S, Decl>

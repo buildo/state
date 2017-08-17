@@ -20,10 +20,10 @@ const omitNils = <S extends StateT>(s: S) => omitBy<S, S>(s, t.Nil.is);
 
 export type StateContextWrapper = React.ComponentType<{}>;
 
-type StateSubject<S extends StateT> = BehaviorSubject<S>;
+export type StateSubject<S extends StateT> = BehaviorSubject<S>;
 type StateTcombType<S extends StateT> = t.Interface<S>;
 
-type RunParams<S extends StateT> = {
+export type RunParams<S extends StateT> = {
   initialState: S;
   transitionReducer?: TransitionFunctionFunction<S>;
   subscribe?: (s: S) => void;
@@ -32,7 +32,7 @@ type RunParams<S extends StateT> = {
   shouldBrowserPatchBePushedOrReplaced?: (oldState: S, newState: S) => boolean;
   history?: History;
 };
-type RunReturn = Promise<StateContextWrapper>;
+export type RunReturn = Promise<StateContextWrapper>;
 export type Run<S extends StateT> = (p: RunParams<S>) => RunReturn;
 
 function pickValidStateKeys<S extends StateT>(stateType: StateTcombType<S>, b: BrowserState): S {

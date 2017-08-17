@@ -1,6 +1,7 @@
-type Obj = null | undefined | { [k: string]: any };
-
-export default function(objA?: Obj, objB?: Obj): boolean {
+export default function(
+  objA?: null | undefined | { [k: string]: any },
+  objB?: null | undefined | { [k: string]: any }
+): boolean {
   if (objA === objB) {
     return true;
   }

@@ -8,7 +8,7 @@
     "release-version": "smooth-release",
     "preversion": "npm run prettier-check && npm run typecheck-examples && npm run test",
     "prepublish": "npm run build",
-    "build": "rm -rf lib && mkdir lib && tsc --outDir lib",
+    "build": "rm -rf lib/* && tsc",
     "typecheck-examples": "tsc --noEmit",
     "prettier": "prettier --semi --single-quote --print-width 120 --parser typescript --write \"{src,test,examples}/**/*.ts\"",
     "prettier-check": "prettier --semi --single-quote --print-width 120 --parser typescript --list-different \"{src,test,examples}/**/*.ts\""

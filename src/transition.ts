@@ -2,8 +2,8 @@ import * as t from 'tcomb';
 import shallowEqual from './shallowEqual';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import * as debug from 'debug';
+import { StateT } from './StateT';
 
-type StateT = { view: string };
 export type TransitionFunctionFunction<S extends StateT> = (s: S) => S;
 export type TransitionFunctionPatch<S extends StateT> = { [k in keyof S]?: S[k] | null };
 export type TransitionFunction<S extends StateT> = (
@@ -12,7 +12,7 @@ export type TransitionFunction<S extends StateT> = (
 
 const log = debug('state:transition');
 
-type MakeTransitionParams<S extends StateT> = {
+export type MakeTransitionParams<S extends StateT> = {
   stateSubject: BehaviorSubject<S>;
   transitionReducer: TransitionFunctionFunction<S>;
   stateType: t.Interface<S>;

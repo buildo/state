@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    "outDir": "./lib",
+    "declaration": true,
     "target": "ES5",
     "noImplicitAny": true,
     "suppressImplicitAnyIndexErrors": true,
@@ -8,7 +10,6 @@
     "strictNullChecks": true,
     "sourceMap": false,
     "alwaysStrict": true,
-    "allowJs": true,
     "jsx": "react",
     "removeComments": true,
     "lib": [

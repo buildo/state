@@ -41,6 +41,7 @@ export default function makeTransition<S extends StateT>({
     const newState = stateType(
       // TODO(typo): double check, it was:
       // transitionReducer(shouldReplace ? { ...patch } : { ...state, ...patch })
+      // using Object.assign because of `[ts] Spread types may only be created from object types`
       transitionReducer(shouldReplace ? Object.assign({}, patch) : Object.assign({}, state, patch))
     );
 

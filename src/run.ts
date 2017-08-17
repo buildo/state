@@ -8,8 +8,9 @@ import mkContextWrapper from './mkContextWrapper';
 import mkTransition from './transition';
 import { TransitionFunction, TransitionFunctionFunction } from './transition';
 import * as t from 'tcomb';
-import { syncToBrowser, onBrowserChange, BrowserState } from './browser';
+import mkBrowser, { BrowserState } from './browser';
 import { StateT } from './StateT';
+import { History } from 'history';
 
 declare var process: any; // TODO(typo)
 
@@ -29,6 +30,7 @@ type RunParams<S extends StateT> = {
   init?: (s: StateSubject<S>, t: TransitionFunction<S>) => void;
   shouldSerializeKey?: (k: keyof S) => boolean;
   shouldBrowserPatchBePushedOrReplaced?: (oldState: S, newState: S) => boolean;
+  history?: History;
 };
 type RunReturn = Promise<StateContextWrapper>;
 export type Run<S extends StateT> = (p: RunParams<S>) => RunReturn;
@@ -66,13 +68,19 @@ export default <S extends StateT>(stateType: StateTcombType<S>) => ({
 
   // whether a patch should be serialized (synced to browser) as a new history item
   // (true and default) or replace the current history item (false)
-  shouldBrowserPatchBePushedOrReplaced = () => true
+  shouldBrowserPatchBePushedOrReplaced = () => true,
+
+  // optionally pass a custom history (different from browser history)
+  // this is only for tests at the moment, but could be necessary for SSR too in the future
+  history
 }: RunParams<S>): RunReturn =>
   new Promise(resolve => {
     const transitionReducer: TransitionFunctionFunction<S> = (s: S) => omitNils<S>(_transitionReducer(s));
 
     const state = new BehaviorSubject(stateType(initialState));
     state.subscribe(subscribe);
+
+    const { syncToBrowser, onBrowserChange } = mkBrowser(history);
 
     const transition = mkTransition({
       stateSubject: state,

@@ -8,6 +8,18 @@ exports[`fulstack scenario 1 1`] = `
 
 exports[`fulstack scenario 1 2`] = `
 <div>
-  {"view":"view2"}
+  {"view":"view2","bar":4}
+</div>
+`;
+
+exports[`fulstack scenario 2 1`] = `
+<div>
+  {"view":"view1"}
+</div>
+`;
+
+exports[`fulstack scenario 2 2`] = `
+<div>
+  {"view":"view2","bar":4}
 </div>
 `;

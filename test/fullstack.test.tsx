@@ -3,6 +3,7 @@ import * as t from 'tcomb';
 import * as React from 'react';
 import * as renderer from 'react-test-renderer';
 import { TransitionFunction } from '../src/transition';
+import createMemoryHistory from 'history/createMemoryHistory';
 
 type State = {
   view: 'view1' | 'view2',
@@ -27,28 +28,64 @@ const snapshot = (Provider, App) => renderer.create((
   </Provider>
 )).toJSON();
 
+const simpleScenario = () => {
+  const { run, connect } = make<State>(State);
+  const App = connect(['view', 'foo', 'bar'])(RenderState);
+  let transition: TransitionFunction<State>;
+  const states: State[] = [];
+  const history = createMemoryHistory();
+  return run({
+    initialState: { view: 'view1' },
+    history,
+    init: (_: any, tr) => {
+      transition = tr;
+    },
+    subscribe: s => {
+      states.push(s);
+    }
+  }).then(Provider => ({
+    transition,
+    states,
+    history,
+    snapshot: () => snapshot(Provider, App)
+  }));
+};
+
 describe('fulstack', () => {
 
   it('scenario 1', () => new Promise((resolve, reject) => {
-    const { run, connect } = make<State>(State);
-    const App = connect(['view'])(RenderState);
-    let transition: TransitionFunction<State>;
-    const historyLength = window.history.length;
-    return run({
-      initialState: { view: 'view1' },
-      init: (_: any, tr) => {
-        transition = tr;
-      }
-    }).then(Provider => {
+    return simpleScenario().then(({ transition, states, history, snapshot }) => {
       // URL doesn't contain valid state, we'll just receive the initialState
-      expect(window.location.pathname).toBe('/');
-      expect(window.history.length).toBe(historyLength + 0);
-      expect(snapshot(Provider, App)).toMatchSnapshot();
+      expect(history.location.pathname).toBe('/');
+      expect(history.length).toBe(1);
+      expect(states[states.length - 1]).toEqual({ view: 'view1' });
+      expect(snapshot()).toMatchSnapshot();
       // update state with something valid
       transition({ view: 'view2', bar: 4 });
-      expect(window.location.pathname).toBe('/view2');
-      expect(window.history.length).toBe(historyLength + 1);
-      expect(snapshot(Provider, App)).toMatchSnapshot();
+      expect(history.location.pathname).toBe('/view2');
+      expect(history.location.search).toBe('?bar=4');
+      expect(history.length).toBe(2);
+      expect(states[states.length - 1]).toEqual({ view: 'view2', bar: 4 });
+      expect(snapshot()).toMatchSnapshot();
+    }).then(() => resolve(), reject)
+  }));
+
+  it('scenario 2', () => new Promise((resolve, reject) => {
+    return simpleScenario().then(({ transition, states, history, snapshot }) => {
+      // URL doesn't contain valid state, we'll just receive the initialState
+      expect(history.location.pathname).toBe('/');
+      expect(history.length).toBe(1);
+      expect(states[states.length - 1]).toEqual({ view: 'view1' });
+      expect(snapshot()).toMatchSnapshot();
+      // update state multiple times, should cause a single diff and push
+      transition({ view: 'view2', bar: 4 });
+      transition({ view: 'view2', bar: 4 });
+      transition({ view: 'view2', bar: 4 });
+      expect(history.location.pathname).toBe('/view2');
+      expect(history.location.search).toBe('?bar=4');
+      expect(history.length).toBe(2);
+      expect(states[states.length - 1]).toEqual({ view: 'view2', bar: 4 });
+      expect(snapshot()).toMatchSnapshot();
     }).then(() => resolve(), reject)
   }));
 });

@@ -1,25 +1,29 @@
-import { syncToBrowser, onBrowserChange } from '../src/browser';
+import mkBrowser from '../src/browser';
+import createMemoryHistory from 'history/createMemoryHistory';
 
 describe('browser', () => {
   it('syncToBrowser should push a new history item if push is true', () => {
-    const historyLength = window.history.length;
+    const history = createMemoryHistory();
+    const { syncToBrowser } = mkBrowser(history);
     syncToBrowser({ view: 'foo', foo: 'bar' }, true);
-    expect(window.location.pathname).toBe('/foo');
-    expect(window.location.search).toBe('?foo=bar');
-    expect(window.history.length).toBe(historyLength + 1);
+    expect(history.location.pathname).toBe('/foo');
+    expect(history.location.search).toBe('?foo=bar');
+    expect(history.length).toBe(2);
   });
 
   it('syncToBrowser should replace the current history item if push is false', () => {
-    const historyLength = window.history.length;
+    const history = createMemoryHistory();
+    const { syncToBrowser } = mkBrowser(history);
     syncToBrowser({ view: 'foo', foo: 'bar' }, false);
-    expect(window.location.pathname).toBe('/foo');
-    expect(window.location.search).toBe('?foo=bar');
-    expect(window.history.length).toBe(historyLength + 0);
+    expect(history.location.pathname).toBe('/foo');
+    expect(history.location.search).toBe('?foo=bar');
+    expect(history.length).toBe(1);
   });
 
   it('onBrowserChange should be called asynchornously after a syncToBrowser', () =>
     new Promise((resolve, reject) => {
       const onBrowserChangeSpy = jest.fn();
+      const { syncToBrowser, onBrowserChange } = mkBrowser(createMemoryHistory());
       onBrowserChange(onBrowserChangeSpy);
       syncToBrowser({ view: 'foo', foo: 'bar' }, false);
       setTimeout(() => {

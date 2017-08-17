@@ -60,6 +60,7 @@ describe('fulstack', () => {
       expect(history.length).toBe(1);
       expect(states[states.length - 1]).toEqual({ view: 'view1' });
       expect(snapshot()).toMatchSnapshot();
+
       // update state with something valid
       transition({ view: 'view2', bar: 4 });
       expect(history.location.pathname).toBe('/view2');
@@ -77,6 +78,7 @@ describe('fulstack', () => {
       expect(history.length).toBe(1);
       expect(states[states.length - 1]).toEqual({ view: 'view1' });
       expect(snapshot()).toMatchSnapshot();
+
       // update state multiple times, should cause a single diff and push
       transition({ view: 'view2', bar: 4 });
       transition({ view: 'view2', bar: 4 });
@@ -87,5 +89,39 @@ describe('fulstack', () => {
       expect(states[states.length - 1]).toEqual({ view: 'view2', bar: 4 });
       expect(snapshot()).toMatchSnapshot();
     }).then(() => resolve(), reject)
+  }));
+
+  it('scenario 3', () => new Promise((resolve, reject) => {
+    return simpleScenario().then(({ transition, states, history, snapshot }) => {
+      // URL doesn't contain valid state, we'll just receive the initialState
+      expect(history.location.pathname).toBe('/');
+      expect(history.length).toBe(1);
+      expect(states[states.length - 1]).toEqual({ view: 'view1' });
+      expect(snapshot()).toMatchSnapshot();
+
+      // update state 3 times, should cause 3 diffs and pushes
+      transition({ view: 'view2', foo: 'bar' });
+      expect(history.location.pathname).toBe('/view2');
+      expect(history.location.search).toBe('?foo=bar');
+      expect(history.length).toBe(2);
+      expect(states[states.length - 1]).toEqual({ view: 'view2', foo: 'bar' });
+
+      transition({ view: 'view2', foo: 'baz' });
+      expect(snapshot()).toMatchSnapshot();
+      expect(history.location.pathname).toBe('/view2');
+      expect(history.location.search).toBe('?foo=baz');
+      expect(history.length).toBe(3);
+      expect(states[states.length - 1]).toEqual({ view: 'view2', foo: 'baz' });
+      expect(snapshot()).toMatchSnapshot();
+
+      transition({ view: 'view2', foo: 'bar' });
+      expect(history.location.pathname).toBe('/view2');
+      expect(history.location.search).toBe('?foo=bar');
+      expect(history.length).toBe(4);
+      expect(states[states.length - 1]).toEqual({ view: 'view2', foo: 'bar' });
+      expect(snapshot()).toMatchSnapshot();
+
+      expect(states.length).toBe(4);
+    }).then(() => resolve(), reject);
   }));
 });

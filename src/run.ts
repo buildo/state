@@ -37,6 +37,7 @@ export type Run<S extends StateT> = (p: RunParams<S>) => RunReturn;
 
 function pickValidStateKeys<S extends StateT>(stateType: StateTcombType<S>, b: BrowserState): S {
   return pickBy<S, BrowserState>(b, (v, k) => {
+    // TODO: parsing should be done here
     return stateType.meta.props.hasOwnProperty(k) && (stateType.meta.props[k] as t.Type<any>).is(v);
   });
 }
@@ -89,6 +90,7 @@ export default <S extends StateT>(stateType: StateTcombType<S>) => ({
         const newSerialized = pickBy<BrowserState, BrowserState>(newState, (_: any, k: keyof S) =>
           shouldSerializeKey(k)
         );
+        // TODO: serialization should be done here
         if (process.env.NODE_ENV === 'development') {
           log('syncing to browser, omitted:', difference(Object.keys(newState), Object.keys(newSerialized)));
         }
@@ -106,7 +108,7 @@ export default <S extends StateT>(stateType: StateTcombType<S>) => ({
     const mergeStateAndValidBrowserState = mergeStateAndBrowserState<S>(stateType);
 
     onBrowserChange(fromRouter => {
-      log('browser change');
+      log('browser change', fromRouter);
       const newState = mergeStateAndValidBrowserState(state.value, fromRouter);
       transition(newState);
 

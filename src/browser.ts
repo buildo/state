@@ -18,21 +18,15 @@ export default function(history: History = createBrowserHistory()) {
 
   function parseBrowserState(location: typeof history.location): BrowserState {
     const view = trim(location.pathname, ' /');
-    const s = qs.parse(location.search);
+    const s = qs.parse(location.search, { ignoreQueryPrefix: true });
     return { ...s, view };
   }
 
   function onBrowserChange(callback: (s: BrowserState) => void): void {
     history.listen(location => {
-      setTimeout(() => {
-        // TODO: something better than setTimeout here?
-        callback(parseBrowserState(location));
-      });
+      callback(parseBrowserState(location));
     });
-    setTimeout(() => {
-      // TODO: something better than setTimeout here?
-      callback(parseBrowserState(history.location));
-    });
+    callback(parseBrowserState(history.location));
   }
 
   return { syncToBrowser, onBrowserChange };

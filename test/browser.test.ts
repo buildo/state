@@ -20,19 +20,11 @@ describe('browser', () => {
     expect(history.length).toBe(1);
   });
 
-  it('onBrowserChange should be called asynchornously after a syncToBrowser', () =>
-    new Promise((resolve, reject) => {
-      const onBrowserChangeSpy = jest.fn();
-      const { syncToBrowser, onBrowserChange } = mkBrowser(createMemoryHistory());
-      onBrowserChange(onBrowserChangeSpy);
-      syncToBrowser({ view: 'foo', foo: 'bar' }, false);
-      setTimeout(() => {
-        try {
-          expect(onBrowserChangeSpy.mock.calls.length).toBe(1 + 1);
-          resolve();
-        } catch (e) {
-          reject(e);
-        }
-      }, 10);
-    }));
+  it('onBrowserChange should be called synchornously after a syncToBrowser', () => {
+    const onBrowserChangeSpy = jest.fn();
+    const { syncToBrowser, onBrowserChange } = mkBrowser(createMemoryHistory());
+    onBrowserChange(onBrowserChangeSpy);
+    syncToBrowser({ view: 'foo', foo: 'bar' }, false);
+    expect(onBrowserChangeSpy.mock.calls.length).toBe(1 + 1);
+  });
 });

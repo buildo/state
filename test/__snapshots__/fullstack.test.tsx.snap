@@ -23,3 +23,27 @@ exports[`fulstack scenario 2 2`] = `
   {"view":"view2","bar":4}
 </div>
 `;
+
+exports[`fulstack scenario 3 1`] = `
+<div>
+  {"view":"view1"}
+</div>
+`;
+
+exports[`fulstack scenario 3 2`] = `
+<div>
+  {"view":"view2","foo":"baz"}
+</div>
+`;
+
+exports[`fulstack scenario 3 3`] = `
+<div>
+  {"view":"view2","foo":"baz"}
+</div>
+`;
+
+exports[`fulstack scenario 3 4`] = `
+<div>
+  {"view":"view2","foo":"bar"}
+</div>
+`;

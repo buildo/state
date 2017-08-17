@@ -10,7 +10,7 @@ export type TransitionFunction<S extends StateT> = (
   transition: TransitionFunctionFunction<S> | TransitionFunctionPatch<S>
 ) => void;
 
-const log = debug('state:run');
+const log = debug('state:transition');
 
 type MakeTransitionParams<S extends StateT> = {
   stateSubject: BehaviorSubject<S>;
@@ -47,8 +47,8 @@ export default function makeTransition<S extends StateT>({
     const stateChanged = !shallowEqual(state, newState);
     log('new state is:', stateChanged ? '(changed)' : 'NO CHANGE', newState);
     if (stateChanged) {
-      syncToBrowser(state, newState);
       stateSubject.next(newState);
+      syncToBrowser(state, newState);
     }
   };
 }

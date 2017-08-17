@@ -24,55 +24,73 @@ export const ConnectContextTypes = {
 };
 
 function defaultGetNewState<S extends ST, Decl extends string>(declaration: Decl[]) {
-  return (v: S) => declaration.reduce((acc, key) => ({
-    ...acc,
-    [key as string]: v[key as string] // TODO(typo)
-  }), {});
+  return (v: S) =>
+    declaration.reduce(
+      (acc, key) => ({
+        ...acc,
+        [key as string]: v[key as string] // TODO(typo)
+      }),
+      {}
+    );
 }
 
 export type ConnectConfig = {
-  pure?: true, filterValid?: true, killProps?: string[]
-}
-export type ConnectedComponentProps<P extends {}, Decl extends string> = ObjectOmit<P, Decl | 'transition'>
-export type ConnectedComponent<P extends {}, Decl extends string> = React.ComponentType<ConnectedComponentProps<P, Decl>>
-export type DecoratedComponent<S extends ST, P extends {}> = React.ComponentType<P & { transition?: TransitionFunction<S> }>
-export type ConnectDecorator<S extends ST, Decl extends keyof S> = <P>(C: DecoratedComponent<S, P>) => ConnectedComponent<P, Decl>
-export type ConnectDeclaration<S extends ST, Decl extends keyof S> = ConnectDecorator<S, Decl> & ({
-  Type: { [k in Decl]: t.Type<any> } & { transition: t.Function1 }
-})
-export type Connect<S extends ST> = <Decl extends keyof S>(decl: Decl[], config?: ConnectConfig) => ConnectDeclaration<S, Decl>
+  pure?: true;
+  filterValid?: true;
+  killProps?: string[];
+};
+export type ConnectedComponentProps<P extends {}, Decl extends string> = ObjectOmit<P, Decl | 'transition'>;
+export type ConnectedComponent<P extends {}, Decl extends string> = React.ComponentType<
+  ConnectedComponentProps<P, Decl>
+>;
+export type DecoratedComponent<S extends ST, P extends {}> = React.ComponentType<
+  P & { transition?: TransitionFunction<S> }
+>;
+export type ConnectDecorator<S extends ST, Decl extends keyof S> = <P>(
+  C: DecoratedComponent<S, P>
+) => ConnectedComponent<P, Decl>;
+export type ConnectDeclaration<S extends ST, Decl extends keyof S> = ConnectDecorator<S, Decl> &
+  ({
+    Type: { [k in Decl]: t.Type<any> } & { transition: t.Function1 };
+  });
+export type Connect<S extends ST> = <Decl extends keyof S>(
+  decl: Decl[],
+  config?: ConnectConfig
+) => ConnectDeclaration<S, Decl>;
 
 // global state tcomb type
 export default function makeConnect<S extends ST>(stateType: t.Interface<S>): Connect<S> {
   // expects a list of keys to connect from state
   // and an optional configuration object
-  return function connectDeclaration<Decl extends keyof S>(decl: Decl[] = [], {
-    // implement a standard shouldComponentUpdate with shallowEquals
-    // do not use on non-pure components, e.g. react-router `RouteHandler`s
-    //
-    // Boolean
-    //
-    pure = true,
+  return function connectDeclaration<Decl extends keyof S>(
+    decl: Decl[] = [],
+    {
+      // implement a standard shouldComponentUpdate with shallowEquals
+      // do not use on non-pure components, e.g. react-router `RouteHandler`s
+      //
+      // Boolean
+      //
+      pure = true,
 
-    // do not update the component props if the type declaration doesn't match
-    // useful to skip "router transitioning" problems: old container that should be unmounted
-    // soon (but still async) by re-rendering after a router change would otherwise receive
-    // the new (and possibly incorrect from their POV) state
-    // TODO(gio): elaborate better / try to remove
-    //
-    // Boolean
-    //
-    filterValid = true,
+      // do not update the component props if the type declaration doesn't match
+      // useful to skip "router transitioning" problems: old container that should be unmounted
+      // soon (but still async) by re-rendering after a router change would otherwise receive
+      // the new (and possibly incorrect from their POV) state
+      // TODO(gio): elaborate better / try to remove
+      //
+      // Boolean
+      //
+      filterValid = true,
 
-    // optionally kill some props using lodash omit
-    // useful to stay strict in @props declaration, a typical default could be:
-    // ['router', 'query', 'params']
-    //
-    // Array<String>
-    //
-    killProps = []
-  }: ConnectConfig = {}) {
-
+      // optionally kill some props using lodash omit
+      // useful to stay strict in @props declaration, a typical default could be:
+      // ['router', 'query', 'params']
+      //
+      // Array<String>
+      //
+      killProps = []
+    }: ConnectConfig = {}
+  ) {
     if (process.env.NODE_ENV !== 'production') {
       const isKeyList = t.list(t.String).is(decl);
       if (!isKeyList) {
@@ -91,22 +109,25 @@ export default function makeConnect<S extends ST>(stateType: t.Interface<S>): Co
 
       const getNewState = defaultGetNewState(decl);
 
-      const shouldUpdateState = filterValid ? (v: S) => {
-        const invalid = decl.filter(k => !(stateType.meta.props[k] as t.Type<any>).is(v[k])); // TODO(typo)
+      const shouldUpdateState = filterValid
+        ? (v: S) => {
+            const invalid = decl.filter(k => !(stateType.meta.props[k] as t.Type<any>).is(v[k])); // TODO(typo)
 
-        if (invalid.length > 0 && process.env.NODE_ENV === 'development') {
-          warn(`Skipping update for ${displayName}. Invalid keys: ${invalid.join(', ')}`);
-        }
-        return invalid.length === 0;
-      } : () => true;
+            if (invalid.length > 0 && process.env.NODE_ENV === 'development') {
+              warn(`Skipping update for ${displayName}. Invalid keys: ${invalid.join(', ')}`);
+            }
+            return invalid.length === 0;
+          }
+        : () => true;
 
-      type ContextT<S extends ST> = { // TODO(typo): move elsewhere and reuse
-        state: BehaviorSubject<S>
-        transition: TransitionFunction<S>
-      }
-      type StateT<S extends ST, Decl extends keyof S> = { [k in Decl]: S[k] } | {}
+      type ContextT<S extends ST> = {
+        // TODO(typo): move elsewhere and reuse
+        state: BehaviorSubject<S>;
+        transition: TransitionFunction<S>;
+      };
+      type StateT<S extends ST, Decl extends keyof S> = { [k in Decl]: S[k] } | {};
       return class ConnectWrapper extends React.Component<ConnectedComponentProps<P, Decl>, StateT<S, Decl>> {
-        static contextTypes = ConnectContextTypes
+        static contextTypes = ConnectContextTypes;
 
         static displayName = displayName;
 
@@ -120,11 +141,14 @@ export default function makeConnect<S extends ST>(stateType: t.Interface<S>): Co
           }
         }
 
-        context: ContextT<S>
-        _subscription?: Subscription
+        context: ContextT<S>;
+        _subscription?: Subscription;
 
         componentDidMount() {
-          this._subscription = this.context.state.filter(shouldUpdateState).map(getNewState).subscribe(this.setState.bind(this));
+          this._subscription = this.context.state
+            .filter(shouldUpdateState)
+            .map(getNewState)
+            .subscribe(this.setState.bind(this));
         }
 
         componentWillUnmount() {
@@ -141,21 +165,19 @@ export default function makeConnect<S extends ST>(stateType: t.Interface<S>): Co
           const props = {
             // state first: connected props are overridable by "actual" (passed) props
             // it's useful for av@queries, av@commands
-            ...(this.state as any), // TODO(typo): spread types can only be created from object types
+            ...this.state as any, // TODO(typo): spread types can only be created from object types
             ...omit(this.props as any, killProps), // TODO(typo): spread types can only be created from object types
             transition: this.context.transition
           };
-          return (
-            <Component {...props} />
-          );
+          return <Component {...props} />;
         }
-      }
-    }
+      };
+    };
 
     (decorator as ConnectDeclaration<S, Decl>).Type = {
-      ...(pick(stateType.meta.props, decl) as any), // TODO(typo): ugh
+      ...pick(stateType.meta.props, decl) as any, // TODO(typo): ugh
       transition: t.Function
     };
     return decorator as ConnectDeclaration<S, Decl>;
-  }
+  };
 }

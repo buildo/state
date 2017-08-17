@@ -13,8 +13,8 @@
     "prepublish": "npm run build",
     "build": "rm -rf lib/* && tsc",
     "typecheck-examples": "tsc --noEmit",
-    "prettier": "prettier --semi --single-quote --print-width 120 --parser typescript --write \"{src,test,examples}/**/*.ts\"",
-    "prettier-check": "prettier --semi --single-quote --print-width 120 --parser typescript --list-different \"{src,test,examples}/**/*.ts\""
+    "prettier": "prettier --semi --single-quote --print-width 120 --parser typescript --write \"{src,test,examples}/**/*.{ts,tsx}\"",
+    "prettier-check": "prettier --semi --single-quote --print-width 120 --parser typescript --list-different \"{src,test,examples}/**/*.{ts,tsx}\""
   },
   "repository": {
     "type": "git",

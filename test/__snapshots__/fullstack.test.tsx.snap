@@ -1,49 +1,49 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`fulstack scenario 1: update state with something valid 1`] = `
-<div>
-  {"view":"view2","bar":4}
-</div>
-`;
-
-exports[`fulstack scenario 2: update state multiple times with same value, should cause a single diff and push 1`] = `
-<div>
-  {"view":"view2","bar":4}
-</div>
-`;
-
-exports[`fulstack scenario 3: update state 3 times, should cause 3 diffs and pushes 1`] = `
-<div>
-  {"view":"view2","foo":"bar"}
-</div>
-`;
-
-exports[`fulstack scenario 3: update state 3 times, should cause 3 diffs and pushes 2`] = `
-<div>
-  {"view":"view2","foo":"baz"}
-</div>
-`;
-
-exports[`fulstack scenario 3: update state 3 times, should cause 3 diffs and pushes 3`] = `
-<div>
-  {"view":"view2","foo":"bar"}
-</div>
-`;
-
-exports[`fulstack scenario 4: pick up from browser correctly 1`] = `
+exports[`fullstack should pick up from browser correctly 1`] = `
 <div>
   {"view":"view2","bar":1}
 </div>
 `;
 
-exports[`fulstack scenario 5: pick up from browser correctly with invalid params 1`] = `
+exports[`fullstack should pick up from browser correctly with invalid params 1`] = `
 <div>
   {"view":"view2"}
 </div>
 `;
 
-exports[`fulstack scenario 6: update state with something valid and serialized 1`] = `
+exports[`fullstack updating state 3 times with changes should cause 3 diffs and pushes 1`] = `
+<div>
+  {"view":"view2","foo":"bar"}
+</div>
+`;
+
+exports[`fullstack updating state 3 times with changes should cause 3 diffs and pushes 2`] = `
+<div>
+  {"view":"view2","foo":"baz"}
+</div>
+`;
+
+exports[`fullstack updating state 3 times with changes should cause 3 diffs and pushes 3`] = `
+<div>
+  {"view":"view2","foo":"bar"}
+</div>
+`;
+
+exports[`fullstack updating state multiple times with same value should cause a single diff and push 1`] = `
+<div>
+  {"view":"view2","bar":4}
+</div>
+`;
+
+exports[`fullstack updating state with something valid and serialized should work 1`] = `
 <div>
   {"view":"view1","bar":2}
+</div>
+`;
+
+exports[`fullstack updating state with something valid should work 1`] = `
+<div>
+  {"view":"view2","bar":4}
 </div>
 `;

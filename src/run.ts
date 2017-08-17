@@ -4,7 +4,7 @@ import pickBy = require('lodash/pickBy');
 import omitBy = require('lodash/omitBy');
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { ConnectContextTypes } from './connect';
-import mkContextWrapper from './mkContextWrapper';
+import mkContextWrapper, { ProvideContext, ProvideContextTypes } from './mkContextWrapper';
 import mkTransition from './transition';
 import { TransitionFunction, TransitionFunctionFunction } from './transition';
 import * as t from 'tcomb';
@@ -30,6 +30,8 @@ export type RunParams<S extends StateT> = {
   init?: (s: StateSubject<S>, t: TransitionFunction<S>) => void;
   shouldSerializeKey?: (k: keyof S) => boolean;
   shouldBrowserPatchBePushedOrReplaced?: (oldState: S, newState: S) => boolean;
+  provideContext?: ProvideContext;
+  provideContextTypes?: ProvideContextTypes;
   history?: History;
 };
 export type RunReturn = Promise<StateContextWrapper>;
@@ -71,6 +73,10 @@ export default <S extends StateT>(stateType: StateTcombType<S>) => ({
   // (true and default) or replace the current history item (false)
   shouldBrowserPatchBePushedOrReplaced = () => true,
 
+  // optionally pass additional react context via the Provider
+  provideContext = {},
+  provideContextTypes = {},
+
   // optionally pass a custom history (different from browser history)
   // this is only for tests at the moment, but could be necessary for SSR too in the future
   history
@@ -99,7 +105,10 @@ export default <S extends StateT>(stateType: StateTcombType<S>) => ({
       transitionReducer
     });
 
-    const ProvideWrapper = mkContextWrapper({ transition, state }, ConnectContextTypes);
+    const ProvideWrapper = mkContextWrapper(
+      { ...provideContext, transition, state },
+      { ...provideContextTypes, ...ConnectContextTypes }
+    );
 
     // wait to receive the first browser state before resolving, so that users can
     // render with something meaningful at hand

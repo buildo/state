@@ -1,6 +1,10 @@
 import * as React from 'react';
+import * as PropTypes from 'prop-types';
 
-export default function mkContextWrapper(ctx: {}, ctxTypes: {}): React.ComponentType<{ children: () => JSX.Element }> {
+export type ProvideContext = { [k: string]: any };
+export type ProvideContextTypes = PropTypes.ValidationMap<any>;
+
+export default function mkContextWrapper(ctx: ProvideContext, ctxTypes: ProvideContextTypes): React.ComponentType<{ children: () => JSX.Element }> {
   return class ContextWrapper extends React.Component<{ children: () => JSX.Element }> {
     static childContextTypes = ctxTypes
 

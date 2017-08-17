@@ -23,8 +23,8 @@ export const ConnectContextTypes = {
   state: PropTypes.object.isRequired
 };
 
-function defaultGetNewState<S extends ST, Decl extends string>(ty: Decl[]) {
-  return (v: S) => ty.reduce((acc, key) => ({
+function defaultGetNewState<S extends ST, Decl extends string>(declaration: Decl[]) {
+  return (v: S) => declaration.reduce((acc, key) => ({
     ...acc,
     [key as string]: v[key as string] // TODO(typo)
   }), {});

@@ -18,13 +18,7 @@ export default function<S extends StateT>(
     throw new Error('`stateType` must be a strict tcomb interface');
   }
 
-  const stateType = t.interface(
-    {
-      ___k: t.maybe(t.Number),
-      ..._stateType.meta.props
-    },
-    { strict: true, name: _stateType.meta.name }
-  ) as t.Interface<S>;
+  const stateType = t.interface(_stateType.meta.props, { strict: true, name: _stateType.meta.name }) as t.Interface<S>;
 
   return {
     appState: stateType,

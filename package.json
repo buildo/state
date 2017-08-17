@@ -69,7 +69,6 @@
       "js",
       "json",
       "jsx"
-    ],
-    "testURL": "http://test.example.com"
+    ]
   }
 }

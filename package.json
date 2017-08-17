@@ -3,6 +3,9 @@
   "version": "0.6.3",
   "description": "State container for react apps with provider and connect HOCs",
   "main": "lib",
+  "files": [
+    "lib"
+  ],
   "scripts": {
     "test": "jest",
     "release-version": "smooth-release",
@@ -50,7 +53,7 @@
     "react-dom": "^15",
     "react-test-renderer": "^15.6.1",
     "sinon": "^1.17.4",
-    "smooth-release": "^6.0.0",
+    "smooth-release": "^8.0.4",
     "ts-jest": "^20.0.10",
     "typelevel-ts": "^0.1.3",
     "typescript": "^2.4.2"

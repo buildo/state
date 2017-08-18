@@ -115,6 +115,8 @@ export default <S extends StateT>(stateType: StateTcombType<S>) => ({
 
   const mergeStateAndValidBrowserState = mergeStateAndBrowserState<S>(stateType);
 
+  // TODO(gio): is this promise really needed? can't we just read the first browser state synchronously?
+  // problem: in this way we are loosing all error thrown by `onBrowserChange` or `init`
   return new Promise((resolve, reject) => {
     try {
       onBrowserChange(fromRouter => {

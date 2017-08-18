@@ -117,7 +117,7 @@ export default <S extends StateT>(stateType: StateTcombType<S>) => ({
 
   return new Promise((resolve, reject) => {
     try {
-      onBrowserChange((fromRouter) => {
+      onBrowserChange(fromRouter => {
         log('browser change', fromRouter);
         const newState = mergeStateAndValidBrowserState(state.value, fromRouter);
         transition(newState);
@@ -133,4 +133,4 @@ export default <S extends StateT>(stateType: StateTcombType<S>) => ({
       reject(e);
     }
   });
-}
+};

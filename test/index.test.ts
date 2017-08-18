@@ -6,6 +6,8 @@ describe('stateInit', () => {
     expect(() => stateInit()).toThrow();
     expect(() => stateInit({})).toThrow();
     expect(() => stateInit(t.struct({}))).toThrow();
-    expect(() => stateInit(t.interface({}, { strict: false }))).toThrowError('`stateType` must be a strict tcomb interface');
+    expect(() => stateInit(t.interface({}, { strict: false }))).toThrowError(
+      '`stateType` must be a strict tcomb interface'
+    );
   });
 });

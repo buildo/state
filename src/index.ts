@@ -8,17 +8,15 @@ const isStrictInterface = (x: any) => {
 };
 
 export default function<S extends StateT>(
-  _stateType: t.Interface<S>
+  stateType: t.Interface<S>
 ): {
   run: Run<S>;
   appState: t.Interface<S>;
   connect: Connect<S>;
 } {
-  if (!isStrictInterface(_stateType)) {
+  if (!isStrictInterface(stateType)) {
     throw new Error('`stateType` must be a strict tcomb interface');
   }
-
-  const stateType = t.interface(_stateType.meta.props, { strict: true, name: _stateType.meta.name }) as t.Interface<S>;
 
   return {
     appState: stateType,

@@ -1,4 +1,5 @@
 import make from '../src';
+import { RunParams } from '../src/run';
 import * as t from 'tcomb';
 import * as React from 'react';
 import * as renderer from 'react-test-renderer';
@@ -39,7 +40,12 @@ const snapshot = (Provider, App) =>
     .toJSON();
 
 type InitialLocationEntry = string | { pathname: string; search?: string };
-const simpleScenario = ({ initialEntries = [] }: { initialEntries?: InitialLocationEntry[] } = {}) => {
+const simpleScenario = (
+  {
+    initialEntries = [],
+    transitionReducer
+  }: { initialEntries?: InitialLocationEntry[]; transitionReducer?: RunParams<State>['transitionReducer'] } = {}
+) => {
   const { run, connect } = make<State>(State);
   const App = connect(['view', 'foo', 'bar'])(RenderState);
   let transition: TransitionFunction<State>;
@@ -48,6 +54,7 @@ const simpleScenario = ({ initialEntries = [] }: { initialEntries?: InitialLocat
   return run({
     initialState: { view: 'view1' },
     history,
+    transitionReducer,
     init: (_: any, tr) => {
       transition = tr;
     },
@@ -162,6 +169,67 @@ describe('fullstack', () => {
           expect(history.location.search).toBe('?bar=2');
           expect(history.length).toBe(1);
           expect(states.length).toBe(2);
+          expect(states[states.length - 1]).toEqual({ view: 'view1', bar: 2 });
+          expect(snapshot()).toMatchSnapshot();
+        })
+        .then(() => resolve(), reject);
+    }));
+
+  it('should react correctly to browser back + fwd', () =>
+    new Promise((resolve, reject) => {
+      return simpleScenario()
+        .then(({ transition, states, history, snapshot }) => {
+          // add two entries to history
+          transition({ bar: 2, view: 'view2' });
+          transition({ bar: 4, view: 'view1' });
+          expect(history.location.pathname).toBe('/view1');
+          expect(history.location.search).toBe('?bar=4');
+          expect(history.length).toBe(2);
+          expect(history.index).toBe(1);
+          expect(states.length).toBe(3);
+          expect(states[states.length - 1]).toEqual({ view: 'view1', bar: 4 });
+          expect(snapshot()).toMatchSnapshot();
+          // browser back
+          history.goBack();
+          expect(history.location.pathname).toBe('/view2');
+          expect(history.location.search).toBe('?bar=2');
+          expect(history.length).toBe(2);
+          expect(history.index).toBe(0);
+          expect(states.length).toBe(4);
+          expect(states[states.length - 1]).toEqual({ view: 'view2', bar: 2 });
+          expect(snapshot()).toMatchSnapshot();
+          // browser fwd
+          history.goForward();
+          expect(history.location.pathname).toBe('/view1');
+          expect(history.location.search).toBe('?bar=4');
+          expect(history.length).toBe(2);
+          expect(history.index).toBe(1);
+          expect(states.length).toBe(5);
+          expect(states[states.length - 1]).toEqual({ view: 'view1', bar: 4 });
+          expect(snapshot()).toMatchSnapshot();
+        })
+        .then(() => resolve(), reject);
+    }));
+
+  it('should react correctly to a browser back + redirect', () =>
+    new Promise((resolve, reject) => {
+      let redirect = false;
+      return simpleScenario({
+        transitionReducer: s => ({ ...s, view: redirect ? 'view1' : s.view })
+      })
+        .then(({ transition, states, history, snapshot }) => {
+          // add two entries to history
+          transition({ bar: 2, view: 'view2' });
+          transition({ bar: 4, view: 'view1' });
+          expect(snapshot()).toMatchSnapshot();
+          // browser back forcing a redirect
+          redirect = true;
+          history.goBack();
+          expect(history.location.pathname).toBe('/view1');
+          expect(history.location.search).toBe('?bar=2');
+          expect(history.length).toBe(2);
+          expect(history.index).toBe(0);
+          expect(states.length).toBe(4);
           expect(states[states.length - 1]).toEqual({ view: 'view1', bar: 2 });
           expect(snapshot()).toMatchSnapshot();
         })

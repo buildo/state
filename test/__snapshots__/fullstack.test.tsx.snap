@@ -12,6 +12,30 @@ exports[`fullstack should pick up from browser correctly with invalid params 1`]
 </div>
 `;
 
+exports[`fullstack should react correctly to a browser back + redirect 1`] = `
+<div>
+  {"view":"view1","bar":4}
+</div>
+`;
+
+exports[`fullstack should react correctly to browser back + fwd 1`] = `
+<div>
+  {"view":"view1","bar":4}
+</div>
+`;
+
+exports[`fullstack should react correctly to browser back + fwd 2`] = `
+<div>
+  {"view":"view2","bar":2}
+</div>
+`;
+
+exports[`fullstack should react correctly to browser back + fwd 3`] = `
+<div>
+  {"view":"view1","bar":4}
+</div>
+`;
+
 exports[`fullstack updating state 3 times with changes should cause 3 diffs and pushes 1`] = `
 <div>
   {"view":"view2","foo":"bar"}

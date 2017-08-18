@@ -16,6 +16,8 @@ export default function(history: History = createBrowserHistory()) {
     (push ? history.push : history.replace)({ pathname, search });
   }
 
+  // TODO(gio): `location` here is optional just because (I think)
+  // it can be undefined in some tests using `memoryHistory`
   function parseBrowserState(location?: typeof history.location): BrowserState {
     const view = location ? trim(location.pathname, ' /') : '';
     const s = location ? qs.parse(location.search, { ignoreQueryPrefix: true }) : {};

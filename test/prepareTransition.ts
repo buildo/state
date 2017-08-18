@@ -16,6 +16,11 @@ export default function<S extends StateT>({
   stateSubject.subscribe(s => {
     states.push(s);
   });
-  const transition = mkTransition({ stateType, stateSubject, transitionReducer: identity, syncToBrowser: () => {} });
+  const { transition } = mkTransition({
+    stateType,
+    stateSubject,
+    transitionReducer: identity,
+    syncToBrowser: () => {}
+  });
   return { states, transition };
 }

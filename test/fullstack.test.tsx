@@ -221,6 +221,7 @@ describe('fullstack', () => {
           // add two entries to history
           transition({ bar: 2, view: 'view2' });
           transition({ bar: 4, view: 'view1' });
+          expect(states.length).toBe(3);
           expect(snapshot()).toMatchSnapshot();
           // browser back forcing a redirect
           redirect = true;

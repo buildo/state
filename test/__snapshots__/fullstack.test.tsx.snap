@@ -18,6 +18,12 @@ exports[`fullstack should react correctly to a browser back + redirect 1`] = `
 </div>
 `;
 
+exports[`fullstack should react correctly to a browser back + redirect 2`] = `
+<div>
+  {"view":"view1","bar":2}
+</div>
+`;
+
 exports[`fullstack should react correctly to browser back + fwd 1`] = `
 <div>
   {"view":"view1","bar":4}

@@ -1,4 +1,4 @@
-import { History } from 'history';
+import { History, Action } from 'history';
 import createBrowserHistory from 'history/createBrowserHistory';
 import trim = require('lodash/trim');
 import omit = require('lodash/omit');
@@ -24,11 +24,11 @@ export default function(history: History = createBrowserHistory()) {
     return { ...s, view };
   }
 
-  function onBrowserChange(callback: (s: BrowserState) => void): void {
-    history.listen(location => {
-      callback(parseBrowserState(location));
+  function onBrowserChange(callback: (s: BrowserState, action: Action) => void): void {
+    history.listen((location, action) => {
+      callback(parseBrowserState(location), action);
     });
-    callback(parseBrowserState(history.location));
+    callback(parseBrowserState(history.location), 'PUSH');
   }
 
   return { syncToBrowser, onBrowserChange };

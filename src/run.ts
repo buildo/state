@@ -86,21 +86,26 @@ export default <S extends StateT>(stateType: StateTcombType<S>) => ({
   const state = new BehaviorSubject(stateType(initialState));
   state.subscribe(subscribe);
 
-  const { syncToBrowser, onBrowserChange } = mkBrowser(history);
+  const { syncToBrowser: _syncToBrowser, onBrowserChange } = mkBrowser(history);
 
   const stringify = _stringify(stateType);
 
-  const transition = mkTransition({
+  const syncToBrowser = (oldState: S, newState: S, forceReplace: boolean = false) => {
+    const newSerialized = pickBy<S, S>(newState, (_: any, k) => shouldSerializeKey(k));
+    if (process.env.NODE_ENV === 'development') {
+      log('syncing to browser, omitted:', difference(Object.keys(newState), Object.keys(newSerialized)));
+    }
+    const newStringified = stringify(newSerialized);
+    return _syncToBrowser(
+      newStringified,
+      forceReplace ? false : shouldBrowserPatchBePushedOrReplaced(oldState, newState)
+    );
+  };
+
+  const { transition, dryRunTransition } = mkTransition({
     stateSubject: state,
     stateType,
-    syncToBrowser: (oldState, newState) => {
-      const newSerialized = pickBy<S, S>(newState, (_: any, k) => shouldSerializeKey(k));
-      if (process.env.NODE_ENV === 'development') {
-        log('syncing to browser, omitted:', difference(Object.keys(newState), Object.keys(newSerialized)));
-      }
-      const newStringified = stringify(newSerialized);
-      return syncToBrowser(newStringified, shouldBrowserPatchBePushedOrReplaced(oldState, newState));
-    },
+    syncToBrowser,
     transitionReducer
   });
 
@@ -119,10 +124,33 @@ export default <S extends StateT>(stateType: StateTcombType<S>) => ({
   // problem: in this way we are loosing all error thrown by `onBrowserChange` or `init`
   return new Promise((resolve, reject) => {
     try {
-      onBrowserChange(fromRouter => {
-        log('browser change', fromRouter);
-        const newState = mergeStateAndValidBrowserState(state.value, fromRouter);
-        transition(newState);
+      onBrowserChange((fromRouter, action) => {
+        log('browser change', `(action=${action})`, fromRouter);
+        const mergedState = mergeStateAndValidBrowserState(state.value, fromRouter);
+        if (action !== 'PUSH') {
+          // if not pushing (so either 'POP' or 'REPLACE') it means that either:
+          // - POP: user is using back via browser
+          // - REPLACE: we are replacing an old history entry not valid anymore (see code below here)
+          const { newState, stateChanged } = dryRunTransition(mergedState, mergedState);
+          if (stateChanged) {
+            log('syncing (replacing) to browser after a back', 'oldState', mergedState, 'newState', newState);
+            state.next(newState);
+            syncToBrowser(newState, newState, true);
+          } else {
+            log('not syncing to browser after this back');
+            if (dryRunTransition(state.value, newState).stateChanged) {
+              log('...just nexting the new state');
+              state.next(newState);
+            }
+          }
+        } else {
+          // otherwise (simpler case!), we get a PUSH if:
+          // - user is entering a new url via browser
+          // - user is interacting with the app (via transition())
+          // in both cases, if there's no diff, `transition` will do its thing and
+          // avoid pushing to browser
+          transition(mergedState);
+        }
 
         if (!_bootstrapped) {
           _bootstrapped = true;

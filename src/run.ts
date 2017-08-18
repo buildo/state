@@ -80,52 +80,57 @@ export default <S extends StateT>(stateType: StateTcombType<S>) => ({
   // optionally pass a custom history (different from browser history)
   // this is only for tests at the moment, but could be necessary for SSR too in the future
   history
-}: RunParams<S>): RunReturn =>
-  new Promise(resolve => {
-    const transitionReducer: TransitionFunctionFunction<S> = (s: S) => omitNils<S>(_transitionReducer(s));
+}: RunParams<S>): RunReturn => {
+  const transitionReducer: TransitionFunctionFunction<S> = (s: S) => omitNils<S>(_transitionReducer(s));
 
-    const state = new BehaviorSubject(stateType(initialState));
-    state.subscribe(subscribe);
+  const state = new BehaviorSubject(stateType(initialState));
+  state.subscribe(subscribe);
 
-    const { syncToBrowser, onBrowserChange } = mkBrowser(history);
+  const { syncToBrowser, onBrowserChange } = mkBrowser(history);
 
-    const stringify = _stringify(stateType);
+  const stringify = _stringify(stateType);
 
-    const transition = mkTransition({
-      stateSubject: state,
-      stateType,
-      syncToBrowser: (oldState, newState) => {
-        const newSerialized = pickBy<S, S>(newState, (_: any, k) => shouldSerializeKey(k));
-        if (process.env.NODE_ENV === 'development') {
-          log('syncing to browser, omitted:', difference(Object.keys(newState), Object.keys(newSerialized)));
-        }
-        const newStringified = stringify(newSerialized);
-        return syncToBrowser(newStringified, shouldBrowserPatchBePushedOrReplaced(oldState, newState));
-      },
-      transitionReducer
-    });
-
-    const ProvideWrapper = mkContextWrapper(
-      { ...provideContext, transition, state },
-      { ...provideContextTypes, ...ConnectContextTypes }
-    );
-
-    // wait to receive the first browser state before resolving, so that users can
-    // render with something meaningful at hand
-    let _bootstrapped = false;
-
-    const mergeStateAndValidBrowserState = mergeStateAndBrowserState<S>(stateType);
-
-    onBrowserChange(fromRouter => {
-      log('browser change', fromRouter);
-      const newState = mergeStateAndValidBrowserState(state.value, fromRouter);
-      transition(newState);
-
-      if (!_bootstrapped) {
-        _bootstrapped = true;
-        resolve(ProvideWrapper);
+  const transition = mkTransition({
+    stateSubject: state,
+    stateType,
+    syncToBrowser: (oldState, newState) => {
+      const newSerialized = pickBy<S, S>(newState, (_: any, k) => shouldSerializeKey(k));
+      if (process.env.NODE_ENV === 'development') {
+        log('syncing to browser, omitted:', difference(Object.keys(newState), Object.keys(newSerialized)));
       }
-    });
-
-    init(state, transition);
+      const newStringified = stringify(newSerialized);
+      return syncToBrowser(newStringified, shouldBrowserPatchBePushedOrReplaced(oldState, newState));
+    },
+    transitionReducer
   });
+
+  const ProvideWrapper = mkContextWrapper(
+    { ...provideContext, transition, state },
+    { ...provideContextTypes, ...ConnectContextTypes }
+  );
+
+  // wait to receive the first browser state before resolving, so that users can
+  // render with something meaningful at hand
+  let _bootstrapped = false;
+
+  const mergeStateAndValidBrowserState = mergeStateAndBrowserState<S>(stateType);
+
+  return new Promise((resolve, reject) => {
+    try {
+      onBrowserChange((fromRouter) => {
+        log('browser change', fromRouter);
+        const newState = mergeStateAndValidBrowserState(state.value, fromRouter);
+        transition(newState);
+
+        if (!_bootstrapped) {
+          _bootstrapped = true;
+          resolve(ProvideWrapper);
+        }
+      });
+
+      init(state, transition);
+    } catch (e) {
+      reject(e);
+    }
+  });
+}

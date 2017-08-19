@@ -256,4 +256,20 @@ describe('fullstack', () => {
         })
         .then(() => resolve(), reject);
     }));
+
+  it('shoud delete from state (and not serialize) any nil-valued key', () =>
+    new Promise((resolve, reject) => {
+      return simpleScenario()
+        .then(({ transition, states, history }) => {
+          transition({ foo: '1', bar: 2 });
+          expect(states[states.length - 1].foo).toBe('1');
+          expect(states[states.length - 1].bar).toBe(2);
+          expect(history.location.search === '?foo=1&bar=2' || history.location.search === '?bar=2&foo=1').toBe(true);
+          transition({ foo: undefined, bar: null });
+          expect(states[states.length - 1].hasOwnProperty('foo')).toBe(false);
+          expect(states[states.length - 1].hasOwnProperty('bar')).toBe(false);
+          expect(history.location.search).toBe('?');
+        })
+        .then(() => resolve(), reject);
+    }));
 });

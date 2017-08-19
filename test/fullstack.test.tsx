@@ -43,8 +43,13 @@ type InitialLocationEntry = string | { pathname: string; search?: string };
 const simpleScenario = (
   {
     initialEntries = [],
-    transitionReducer
-  }: { initialEntries?: InitialLocationEntry[]; transitionReducer?: RunParams<State>['transitionReducer'] } = {}
+    transitionReducer,
+    shouldSerializeKey
+  }: {
+    initialEntries?: InitialLocationEntry[];
+    transitionReducer?: RunParams<State>['transitionReducer'];
+    shouldSerializeKey?: RunParams<State>['shouldSerializeKey'];
+  } = {}
 ) => {
   const { run, connect } = make<State>(State);
   const App = connect(['view', 'foo', 'bar'])(RenderState);
@@ -55,6 +60,7 @@ const simpleScenario = (
     initialState: { view: 'view1' },
     history,
     transitionReducer,
+    shouldSerializeKey,
     init: (_: any, tr) => {
       transition = tr;
     },
@@ -233,6 +239,20 @@ describe('fullstack', () => {
           expect(states.length).toBe(4);
           expect(states[states.length - 1]).toEqual({ view: 'view1', bar: 2 });
           expect(snapshot()).toMatchSnapshot();
+        })
+        .then(() => resolve(), reject);
+    }));
+
+  it('should allow to not serialize certain keys', () =>
+    new Promise((resolve, reject) => {
+      return simpleScenario({
+        shouldSerializeKey: k => k !== 'bar'
+      })
+        .then(({ transition, states, history }) => {
+          transition({ view: 'view1', bar: 2 });
+          expect(states[states.length - 1]).toEqual({ view: 'view1', bar: 2 });
+          expect(history.location.pathname).toBe('/view1');
+          expect(history.location.search).toBe('?');
         })
         .then(() => resolve(), reject);
     }));

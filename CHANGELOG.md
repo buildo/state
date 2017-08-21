@@ -2,6 +2,13 @@
 
 
 
+## [v0.7.0](https://github.com/buildo/state/tree/v0.7.0) (2017-08-21)
+[Full Changelog](https://github.com/buildo/state/compare/v0.6.3...v0.7.0)
+
+#### Breaking:
+
+- rewrite with ts and router in mind [#44](https://github.com/buildo/state/issues/44)
+
 ## [v0.6.3](https://github.com/buildo/state/tree/v0.6.3) (2017-07-24)
 [Full Changelog](https://github.com/buildo/state/compare/v0.6.2...v0.6.3)
 

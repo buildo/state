@@ -35,8 +35,23 @@ function defaultGetNewState<S extends ST, Decl extends string>(declaration: Decl
 }
 
 export type ConnectConfig = {
-  pure?: true;
-  filterValid?: true;
+  /**
+   * Implement a standard shouldComponentUpdate with shallowEquals.
+   * Should be `false` on non-pure components, e.g. react-router `RouteHandler`s.
+   * default: true
+   */
+  pure?: boolean;
+  /**
+   * [DEPRECATED]
+   * Do not rerender if received state is not valid.
+   * default: true
+   * */
+  filterValid?: boolean;
+  /**
+   * [DEPRECATED]
+   * Do not pass down some of the received props.
+   * default: []
+   */
   killProps?: string[];
 };
 export type ConnectedComponentProps<P extends {}, Decl extends string> = ObjectOmit<P, Decl | 'transition'>;
@@ -47,6 +62,10 @@ export type DecoratedComponent<S extends ST, P extends {}> = React.ComponentType
   P & { transition?: TransitionFunction<S> }
 >;
 export type ConnectDecorator<S extends ST, Decl extends keyof S> = <P>(
+  /**
+   * Component to connect.
+   * Will be rendered adding the declared keys from state and `transition` as props
+   * */
   C: DecoratedComponent<S, P>
 ) => ConnectedComponent<P, Decl>;
 export type ConnectDeclaration<S extends ST, Decl extends keyof S> = ConnectDecorator<S, Decl> &
@@ -54,7 +73,13 @@ export type ConnectDeclaration<S extends ST, Decl extends keyof S> = ConnectDeco
     Type: { [k in Decl]: t.Type<any> } & { transition: t.Function1 };
   });
 export type Connect<S extends ST> = <Decl extends keyof S>(
+  /**
+   * keys of State to be connected and passed to this container
+   */
   decl: Decl[],
+  /**
+   * optinal additional configurations
+  */
   config?: ConnectConfig
 ) => ConnectDeclaration<S, Decl>;
 
@@ -65,29 +90,13 @@ export default function makeConnect<S extends ST>(stateType: t.Interface<S>): Co
   return function connectDeclaration<Decl extends keyof S>(
     decl: Decl[] = [],
     {
-      // implement a standard shouldComponentUpdate with shallowEquals
-      // do not use on non-pure components, e.g. react-router `RouteHandler`s
-      //
-      // Boolean
-      //
       pure = true,
-
       // do not update the component props if the type declaration doesn't match
       // useful to skip "router transitioning" problems: old container that should be unmounted
       // soon (but still async) by re-rendering after a router change would otherwise receive
       // the new (and possibly incorrect from their POV) state
       // TODO(gio): elaborate better / try to remove
-      //
-      // Boolean
-      //
       filterValid = true,
-
-      // optionally kill some props using lodash omit
-      // useful to stay strict in @props declaration, a typical default could be:
-      // ['router', 'query', 'params']
-      //
-      // Array<String>
-      //
       killProps = []
     }: ConnectConfig = {}
   ) {

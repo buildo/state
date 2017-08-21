@@ -24,17 +24,60 @@ export type StateContextWrapper = React.ComponentType<{}>;
 export type StateSubject<S extends StateT> = BehaviorSubject<S>;
 
 export type RunParams<S extends StateT> = {
+  /**
+   * Initial state value
+   */
   initialState: S;
+  /**
+   * Apply custom transformations after every state transition,
+   * before pushing the updated value to connected components
+   */
   transitionReducer?: TransitionFunctionFunction<S>;
-  subscribe?: (s: S) => void;
-  init?: (s: StateSubject<S>, t: TransitionFunction<S>) => void;
-  shouldSerializeKey?: (k: keyof S) => boolean;
+  /**
+   * Subscribe to every state change... in case you need it
+   */
+  subscribe?: (state: S) => void;
+  /**
+   * App own initialization calback... in case you need it.
+   * Has access access the state Rx.Subject and the `transition` function
+   */
+  init?: (state: StateSubject<S>, transition: TransitionFunction<S>) => void;
+  /**
+   * Whether to serialize (sync to browser) a state key or not.
+   * Should return true if `key` should be serialized, false if not.
+   * default: serialize all keys
+   */
+  shouldSerializeKey?: (key: keyof S) => boolean;
+  /**
+   * Whether a patch should be serialized (synced to browser) as a new history item
+   * (return true) or replace the current history item (return false).
+   * default: always push
+   */
   shouldBrowserPatchBePushedOrReplaced?: (oldState: S, newState: S) => boolean;
-  provideContext?: ProvideContext;
-  provideContextTypes?: ProvideContextTypes;
+  /**
+   * Pass additional react context via the returned Provider
+   */
+  provideContext?: {
+    /**
+     * Context values to be passed to the components tree
+     */
+    values: ProvideContext;
+    /**
+     * Types of the passed context values (defined as PropTypes map)
+     */
+    types?: ProvideContextTypes;
+  };
+  /**
+   * Pass a custom history (different from browser history).
+   * This is only for tests at the moment, but could be necessary for SSR too in the future
+   */
   history?: History;
 };
-export type RunReturn = Promise<StateContextWrapper>;
+export type RunReturn = /**
+ * Context provider used by `connect`. Should be used in the main `ReactDOM.render()` call.
+ */ Promise<
+  StateContextWrapper
+>;
 export type Run<S extends StateT> = (p: RunParams<S>) => RunReturn;
 
 function parseAndPickValidStateKeys<S extends StateT>(stateType: StateTcombType<S>, b: BrowserState): S {
@@ -50,35 +93,13 @@ const mergeStateAndBrowserState = <S extends StateT>(stateType: StateTcombType<S
 const transitionReducerIdentity = <S extends StateT>(s: S) => s;
 
 export default <S extends StateT>(stateType: StateTcombType<S>) => ({
-  // initial state
   initialState,
-
-  // apply custom transformations after every state transition
   transitionReducer: _transitionReducer = transitionReducerIdentity,
-
-  // subscribe to every state change
-  // ...in case you need it
   subscribe = () => {},
-
-  // app own initialization calback
-  // ...in case you need it
-  // has access access the state Rx.Subject and
-  // the transition function (documented elsewhere)
   init = () => {},
-
-  // whether to serialize (sync to browser) a state key or not
   shouldSerializeKey = () => true,
-
-  // whether a patch should be serialized (synced to browser) as a new history item
-  // (true and default) or replace the current history item (false)
   shouldBrowserPatchBePushedOrReplaced = () => true,
-
-  // optionally pass additional react context via the Provider
-  provideContext = {},
-  provideContextTypes = {},
-
-  // optionally pass a custom history (different from browser history)
-  // this is only for tests at the moment, but could be necessary for SSR too in the future
+  provideContext: { values: provideContext = {}, types: provideContextTypes = {} } = {},
   history
 }: RunParams<S>): RunReturn => {
   const transitionReducer: TransitionFunctionFunction<S> = (s: S) => omitNils<S>(_transitionReducer(s));
@@ -116,6 +137,7 @@ export default <S extends StateT>(stateType: StateTcombType<S>) => ({
 
   // wait to receive the first browser state before resolving, so that users can
   // render with something meaningful at hand
+  // TODO(gio): consider removing asynchronicity here (see TODO below)
   let _bootstrapped = false;
 
   const mergeStateAndValidBrowserState = mergeStateAndBrowserState<S>(stateType);

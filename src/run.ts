@@ -26,21 +26,21 @@ export type StateSubject<S extends StateT> = BehaviorSubject<S>;
 export type RunParams<S extends StateT> = {
   /**
    * Initial state value
-   * */
+   */
   initialState: S;
   /**
    * Apply custom transformations after every state transition,
    * before pushing the updated value to connected components
-   * */
+   */
   transitionReducer?: TransitionFunctionFunction<S>;
   /**
    * Subscribe to every state change... in case you need it
-   * */
+   */
   subscribe?: (state: S) => void;
   /**
    * App own initialization calback... in case you need it.
    * Has access access the state Rx.Subject and the `transition` function
-   * */
+   */
   init?: (state: StateSubject<S>, transition: TransitionFunction<S>) => void;
   /**
    * Whether to serialize (sync to browser) a state key or not.
@@ -52,25 +52,25 @@ export type RunParams<S extends StateT> = {
    * Whether a patch should be serialized (synced to browser) as a new history item
    * (return true) or replace the current history item (return false).
    * default: always push
-   * */
+   */
   shouldBrowserPatchBePushedOrReplaced?: (oldState: S, newState: S) => boolean;
   /**
-   * Optionally pass additional react context via the returned Provider
-   * */
+   * Pass additional react context via the returned Provider
+   */
   provideContext?: {
     /**
      * Context values to be passed to the components tree
-     * */
+     */
     values: ProvideContext;
     /**
      * Types of the passed context values (defined as PropTypes map)
-     * */
+     */
     types?: ProvideContextTypes;
   };
   /**
-   * Optionally pass a custom history (different from browser history).
+   * Pass a custom history (different from browser history).
    * This is only for tests at the moment, but could be necessary for SSR too in the future
-   * */
+   */
   history?: History;
 };
 export type RunReturn = /**

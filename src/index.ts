@@ -7,8 +7,10 @@ const isStrictInterface = (x: any) => {
   return t.isType(x) && x.meta.kind === 'interface' && x.meta.strict === true;
 };
 
+/**
+ * @param stateType tcomb interface for State type
+ */
 export default function<S extends StateT>(
-  /** tcomb interface for State type */
   stateType: StateTcombType<S>
 ): {
   run: Run<S>;

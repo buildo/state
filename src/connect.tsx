@@ -42,15 +42,15 @@ export type ConnectConfig = {
    */
   pure?: boolean;
   /**
-   * [DEPRECATED]
    * Do not rerender if received state is not valid.
    * default: true
-   * */
+   * @deprecated not needed anymore (it was needed with React Router)
+   */
   filterValid?: boolean;
   /**
-   * [DEPRECATED]
    * Do not pass down some of the received props.
    * default: []
+   * @deprecated not needed anymore (it was handy with React Router)
    */
   killProps?: string[];
 };
@@ -65,7 +65,7 @@ export type ConnectDecorator<S extends ST, Decl extends keyof S> = <P>(
   /**
    * Component to connect.
    * Will be rendered adding the declared keys from state and `transition` as props
-   * */
+   */
   C: DecoratedComponent<S, P>
 ) => ConnectedComponent<P, Decl>;
 export type ConnectDeclaration<S extends ST, Decl extends keyof S> = ConnectDecorator<S, Decl> &
@@ -74,12 +74,12 @@ export type ConnectDeclaration<S extends ST, Decl extends keyof S> = ConnectDeco
   });
 export type Connect<S extends ST> = <Decl extends keyof S>(
   /**
-   * keys of State to be connected and passed to this container
+   * Keys of State to be connected and passed to this container
    */
   decl: Decl[],
   /**
-   * optinal additional configurations
-  */
+   * Additional configurations
+   */
   config?: ConnectConfig
 ) => ConnectDeclaration<S, Decl>;
 

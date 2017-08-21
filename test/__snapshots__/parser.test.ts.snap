@@ -1,0 +1,29 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`parse should parse booleans 1`] = `
+Object {
+  "bool": true,
+  "view": "foo",
+}
+`;
+
+exports[`parse should parse numbers 1`] = `
+Object {
+  "numb": 4,
+  "view": "foo",
+}
+`;
+
+exports[`parse should parse optional booleans 1`] = `
+Object {
+  "optBool": false,
+  "view": "foo",
+}
+`;
+
+exports[`parse should parse optional numbers 1`] = `
+Object {
+  "optNumb": 4,
+  "view": "foo",
+}
+`;

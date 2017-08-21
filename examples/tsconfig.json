@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "noImplicitAny": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "strictNullChecks": true,
+    "sourceMap": false,
+    "alwaysStrict": true,
+    "jsx": "react",
+    "lib": [
+      "dom", "es6"
+    ]
+  },
+  "include": [
+    "./**/*",
+    "../typings"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

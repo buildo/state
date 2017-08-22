@@ -2,6 +2,13 @@
 
 
 
+## [v0.8.2](https://github.com/buildo/state/tree/v0.8.2) (2017-08-22)
+[Full Changelog](https://github.com/buildo/state/compare/v0.8.1...v0.8.2)
+
+#### New features:
+
+- produced run.d.ts is slightly broken [#49](https://github.com/buildo/state/issues/49)
+
 ## [v0.8.1](https://github.com/buildo/state/tree/v0.8.1) (2017-08-22)
 [Full Changelog](https://github.com/buildo/state/compare/v0.8.0...v0.8.1)
 

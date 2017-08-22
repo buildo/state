@@ -2,6 +2,13 @@
 
 
 
+## [v0.8.1](https://github.com/buildo/state/tree/v0.8.1) (2017-08-22)
+[Full Changelog](https://github.com/buildo/state/compare/v0.8.0...v0.8.1)
+
+#### New features:
+
+- @types/prop-types should be a dep, not a devDep [#47](https://github.com/buildo/state/issues/47)
+
 ## [v0.8.0](https://github.com/buildo/state/tree/v0.8.0) (2017-08-22)
 [Full Changelog](https://github.com/buildo/state/compare/v0.7.0...v0.8.0)
 

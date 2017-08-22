@@ -99,7 +99,7 @@ export default <S extends StateT>(stateType: StateTcombType<S>) => ({
   init = () => {},
   shouldSerializeKey = () => true,
   shouldBrowserPatchBePushedOrReplaced = () => true,
-  provideContext: { values: provideContext = {}, types: provideContextTypes = {} } = {},
+  provideContext,
   history
 }: RunParams<S>): RunReturn => {
   const transitionReducer: TransitionFunctionFunction<S> = (s: S) => omitNils<S>(_transitionReducer(s));
@@ -130,8 +130,9 @@ export default <S extends StateT>(stateType: StateTcombType<S>) => ({
     transitionReducer
   });
 
+  const { values: provideContextValues = {}, types: provideContextTypes = {} } = provideContext || {};
   const ProvideWrapper = mkContextWrapper(
-    { ...provideContext, transition, state },
+    { ...provideContextValues, transition, state },
     { ...provideContextTypes, ...ConnectContextTypes }
   );
 

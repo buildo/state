@@ -2,6 +2,13 @@
 
 
 
+## [v0.8.0](https://github.com/buildo/state/tree/v0.8.0) (2017-08-22)
+[Full Changelog](https://github.com/buildo/state/compare/v0.7.0...v0.8.0)
+
+#### Breaking:
+
+- add inline documentation on the main function signatures [#45](https://github.com/buildo/state/issues/45)
+
 ## [v0.7.0](https://github.com/buildo/state/tree/v0.7.0) (2017-08-21)
 [Full Changelog](https://github.com/buildo/state/compare/v0.6.3...v0.7.0)
 

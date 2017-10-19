@@ -2,7 +2,9 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import mkTransition, { TransitionFunction } from '../src/transition';
 import { StateT } from '../src/StateT';
 import * as t from 'tcomb';
-import identity = require('lodash/identity');
+import omitBy = require('lodash/omitBy');
+
+const omitNils = <S extends StateT>(s: S) => omitBy<S, S>(s, t.Nil.is);
 
 export default function<S extends StateT>({
   stateType,
@@ -19,7 +21,7 @@ export default function<S extends StateT>({
   const { transition } = mkTransition({
     stateType,
     stateSubject,
-    transitionReducer: identity,
+    transitionReducer: omitNils, // TODO: not nice. Either move inside transition impl., or move tests relying on omitNils at an higher level
     syncToBrowser: () => {}
   });
   return { states, transition };

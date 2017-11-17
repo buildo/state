@@ -5,6 +5,7 @@ import * as React from 'react';
 import * as renderer from 'react-test-renderer';
 import { TransitionFunction } from '../src/transition';
 import createMemoryHistory from 'history/createMemoryHistory';
+import omit = require('lodash/omit');
 
 type State = {
   view: 'view1' | 'view2';
@@ -22,33 +23,24 @@ const State = t.interface<State>(
 
 class RenderState extends React.Component<Partial<State>> {
   render() {
-    return (
-      <div>
-        {JSON.stringify(this.props)}
-      </div>
-    );
+    return <div>{JSON.stringify(this.props)}</div>;
   }
 }
 
-const snapshot = (Provider, App) =>
-  renderer
-    .create(
-      <Provider>
-        {() => <App />}
-      </Provider>
-    )
-    .toJSON();
+const snapshot = (Provider, App) => renderer.create(<Provider>{() => <App />}</Provider>).toJSON();
 
 type InitialLocationEntry = string | { pathname: string; search?: string };
 const simpleScenario = (
   {
     initialEntries = [],
     transitionReducer,
-    shouldSerializeKey
+    shouldSerializeKey,
+    paths
   }: {
     initialEntries?: InitialLocationEntry[];
     transitionReducer?: RunParams<State>['transitionReducer'];
     shouldSerializeKey?: RunParams<State>['shouldSerializeKey'];
+    paths?: RunParams<State>['paths'];
   } = {}
 ) => {
   const { run, connect } = make<State>(State);
@@ -66,7 +58,8 @@ const simpleScenario = (
     },
     subscribe: s => {
       states.push(s);
-    }
+    },
+    paths
   }).then(Provider => ({
     transition,
     states,
@@ -257,7 +250,7 @@ describe('fullstack', () => {
         .then(() => resolve(), reject);
     }));
 
-  it('shoud delete from state (and not serialize) any nil-valued key', () =>
+  it('should delete from state (and not serialize) any nil-valued key', () =>
     new Promise((resolve, reject) => {
       return simpleScenario()
         .then(({ transition, states, history }) => {
@@ -269,6 +262,31 @@ describe('fullstack', () => {
           expect(states[states.length - 1].hasOwnProperty('foo')).toBe(false);
           expect(states[states.length - 1].hasOwnProperty('bar')).toBe(false);
           expect(history.location.search).toBe('?');
+        })
+        .then(() => resolve(), reject);
+    }));
+
+  it('should allow to map part of the state on the url pathname part', () =>
+    new Promise((resolve, reject) => {
+      return simpleScenario({
+        paths: [
+          {
+            is: ({ view }) => view === 'view1',
+            serialize: s => `products/${s.foo}`,
+            deserialize: pathname => {
+              const match = pathname.match(/^products\/(\w+)$/);
+              return match ? { view: 'view1', foo: match[1] } : null;
+            },
+            pick: s => ({ view: s.view, foo: s.foo })
+          }
+        ]
+      })
+        .then(({ transition, states, history }) => {
+          transition({ view: 'view1', foo: 'foo' });
+          expect(states[states.length - 1].foo).toBe('foo');
+          expect(states[states.length - 1].view).toBe('view1');
+          expect(history.location.search === '?').toBe(true);
+          expect(history.location.pathname).toBe('/products/foo');
         })
         .then(() => resolve(), reject);
     }));

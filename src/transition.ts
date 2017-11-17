@@ -38,8 +38,8 @@ export default function makeTransition<S extends StateT>({
   const dryRunTransition: DryRunTransitionFunction<S> = (state, _transition) => {
     const isTransitionFunction = t.Function.is(_transition);
     const transitionFn = isTransitionFunction
-      ? _transition as TransitionFunctionFunction<S> // TODO(typo): cast
-      : ((() => _transition) as any) as TransitionFunctionFunction<S>; // TODO(typo): cast + removed `t.Object(` check
+      ? (_transition as TransitionFunctionFunction<S>) // TODO(typo): cast
+      : (((() => _transition) as any) as TransitionFunctionFunction<S>); // TODO(typo): cast + removed `t.Object(` check
 
     const patch = transitionFn(state);
 

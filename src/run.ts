@@ -8,7 +8,7 @@ import mkContextWrapper, { ProvideContext, ProvideContextTypes } from './Context
 import mkTransition from './transition';
 import { TransitionFunction, TransitionFunctionFunction } from './transition';
 import * as t from 'tcomb';
-import mkBrowser, { BrowserState } from './browser';
+import mkBrowser, { BrowserState, PathConfigs } from './browser';
 import { StateT, StateTcombType } from './StateT';
 import { History } from 'history';
 import { stringify as _stringify, parse as _parse, ParsedBrowserState } from './parser';
@@ -72,12 +72,14 @@ export type RunParams<S extends StateT> = {
    * This is only for tests at the moment, but could be necessary for SSR too in the future
    */
   history?: History;
+  /**
+   * configuration for (de)serializing paths and path params
+   */
+  paths?: PathConfigs<BrowserState>;
 };
 export type RunReturn = /**
  * Context provider used by `connect`. Should be used in the main `ReactDOM.render()` call.
- */ Promise<
-  StateContextWrapper
->;
+ */ Promise<StateContextWrapper>;
 export type Run<S extends StateT> = (p: RunParams<S>) => RunReturn;
 
 function parseAndPickValidStateKeys<S extends StateT>(stateType: StateTcombType<S>, b: BrowserState): S {
@@ -88,7 +90,7 @@ function parseAndPickValidStateKeys<S extends StateT>(stateType: StateTcombType<
 }
 
 const mergeStateAndBrowserState = <S extends StateT>(stateType: StateTcombType<S>) => (s: S, b: BrowserState) =>
-  omitNils({ ...s as any, ...parseAndPickValidStateKeys(stateType, b) as any }) as S; // TODO(typo)
+  omitNils({ ...(s as any), ...(parseAndPickValidStateKeys(stateType, b) as any) }) as S; // TODO(typo)
 
 const transitionReducerIdentity = <S extends StateT>(s: S) => s;
 
@@ -100,14 +102,15 @@ export default <S extends StateT>(stateType: StateTcombType<S>) => ({
   shouldSerializeKey = () => true,
   shouldBrowserPatchBePushedOrReplaced = () => true,
   provideContext,
-  history
+  history,
+  paths
 }: RunParams<S>): RunReturn => {
   const transitionReducer: TransitionFunctionFunction<S> = (s: S) => omitNils<S>(_transitionReducer(s));
 
   const state = new BehaviorSubject(stateType(initialState));
   state.subscribe(subscribe);
 
-  const { syncToBrowser: _syncToBrowser, onBrowserChange } = mkBrowser(history);
+  const { syncToBrowser: _syncToBrowser, onBrowserChange } = mkBrowser(paths, history);
 
   const stringify = _stringify(stateType);
 

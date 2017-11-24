@@ -1,7 +1,6 @@
 import mkBrowser, { parseBrowserState, serializeBrowserState } from '../src/browser';
 import createMemoryHistory from 'history/createMemoryHistory';
 import { Location } from 'history';
-import omit = require('lodash/omit');
 
 function partialLocation(pl: Partial<Location>): Location {
   return {

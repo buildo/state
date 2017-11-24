@@ -110,7 +110,7 @@ export default <S extends StateT>(stateType: StateTcombType<S>) => ({
   const state = new BehaviorSubject(stateType(initialState));
   state.subscribe(subscribe);
 
-  const { syncToBrowser: _syncToBrowser, onBrowserChange } = mkBrowser(paths, history);
+  const { syncToBrowser: _syncToBrowser, onBrowserChange, dryRunBrowserTransition } = mkBrowser(paths, history);
 
   const stringify = _stringify(stateType);
 
@@ -130,7 +130,8 @@ export default <S extends StateT>(stateType: StateTcombType<S>) => ({
     stateSubject: state,
     stateType,
     syncToBrowser,
-    transitionReducer
+    transitionReducer,
+    dryRunBrowserTransition
   });
 
   const { values: provideContextValues = {}, types: provideContextTypes = {} } = provideContext || {};
@@ -157,7 +158,10 @@ export default <S extends StateT>(stateType: StateTcombType<S>) => ({
           // if not pushing (so either 'POP' or 'REPLACE') it means that either:
           // - POP: user is using back via browser
           // - REPLACE: we are replacing an old history entry not valid anymore (see code below here)
-          const { newState, stateChanged } = dryRunTransition(mergedState, mergedState);
+          const { newState, stateChanged } = (dryRunTransition(mergedState, mergedState) as any) as {
+            newState: S; // TODO(typo)
+            stateChanged: boolean;
+          };
           if (stateChanged) {
             log('syncing (replacing) to browser after a back', 'oldState', mergedState, 'newState', newState);
             state.next(newState);

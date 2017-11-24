@@ -25,12 +25,14 @@ export type MakeTransitionParams<S extends StateT> = {
   transitionReducer: TransitionFunctionFunction<S>;
   stateType: t.Interface<S>;
   syncToBrowser: (oldState: S, newState: S) => void;
+  dryRunBrowserTransition: (newState: S) => S;
 };
 export default function makeTransition<S extends StateT>({
   stateSubject,
   transitionReducer,
   stateType,
-  syncToBrowser
+  syncToBrowser,
+  dryRunBrowserTransition
 }: MakeTransitionParams<S>): {
   transition: TransitionFunction<S>;
   dryRunTransition: DryRunTransitionFunction<S>;
@@ -44,12 +46,11 @@ export default function makeTransition<S extends StateT>({
     const patch = transitionFn(state);
 
     const shouldReplace = isTransitionFunction;
-    const newState = stateType(
-      // TODO(typo): double check, it was:
-      // transitionReducer(shouldReplace ? { ...patch } : { ...state, ...patch })
-      // using Object.assign because of `[ts] Spread types may only be created from object types`
-      transitionReducer(shouldReplace ? Object.assign({}, patch) : Object.assign({}, state, patch))
-    );
+    // TODO(typo): double check, it was:
+    // transitionReducer(shouldReplace ? { ...patch } : { ...state, ...patch })
+    // using Object.assign because of `[ts] Spread types may only be created from object types`
+    const possiblyDirtyNewState = shouldReplace ? Object.assign({}, patch) : Object.assign({}, state, patch);
+    const newState = stateType(transitionReducer(dryRunBrowserTransition(possiblyDirtyNewState)));
 
     const stateChanged = !shallowEqual(state, newState);
     return { patch, stateChanged, newState };

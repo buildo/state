@@ -129,25 +129,25 @@ describe('browser', () => {
 
   describe('serializeBrowserState', () => {
     it('should produce urlencoded pathnames with a single leading /', () => {
-      expect(serializeBrowserState({ view: 'foo' }, []).pathname).toEqual('/foo');
-      expect(serializeBrowserState({ view: '/foo/' }, []).pathname).toEqual('/%2Ffoo%2F');
+      expect(serializeBrowserState([], { view: 'foo' }).pathname).toEqual('/foo');
+      expect(serializeBrowserState([], { view: '/foo/' }).pathname).toEqual('/%2Ffoo%2F');
     });
 
     it('should produce urlencoded searches with a single leading ?', () => {
-      expect(serializeBrowserState({ view: 'foo', foo: 'foo', bar: 'bar' }, []).search).toBe('?foo=foo&bar=bar');
-      expect(serializeBrowserState({ view: 'foo', '?foo': 'foo', bar: 'bar' }, []).search).toBe('?%3Ffoo=foo&bar=bar');
+      expect(serializeBrowserState([], { view: 'foo', foo: 'foo', bar: 'bar' }).search).toBe('?foo=foo&bar=bar');
+      expect(serializeBrowserState([], { view: 'foo', '?foo': 'foo', bar: 'bar' }).search).toBe('?%3Ffoo=foo&bar=bar');
     });
 
     it('should serialize configured paths', () => {
-      expect(serializeBrowserState({ view: 'users', userId: '10' }, [userDetailPathConfig]).pathname).toBe('/users/10');
+      expect(serializeBrowserState([userDetailPathConfig], { view: 'users', userId: '10' }).pathname).toBe('/users/10');
     });
 
     it('should not serialize configured path params as part of search', () => {
-      expect(serializeBrowserState({ view: 'users', userId: '10' }, [userDetailPathConfig]).search).toBe('?');
+      expect(serializeBrowserState([userDetailPathConfig], { view: 'users', userId: '10' }).search).toBe('?');
     });
 
     it('should serialize with default path in case of no match', () => {
-      expect(serializeBrowserState({ view: 'foo', userId: '10' }, [userDetailPathConfig]).pathname).toBe('/foo');
+      expect(serializeBrowserState([userDetailPathConfig], { view: 'foo', userId: '10' }).pathname).toBe('/foo');
     });
   });
 });

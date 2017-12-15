@@ -59,13 +59,13 @@ function cleanupPathParams(
   return omit(s, difference(currentPathParamKeys, nextPathParamKeys));
 }
 
-function browserStateToPathConfig(s: BrowserState, paths: PathConfigs<BrowserState>): PathConfig<BrowserState> {
+function browserStateToPathConfig(paths: PathConfigs<BrowserState>, s: BrowserState): PathConfig<BrowserState> {
   return find(paths, p => p.is(s)) || defaultNoPath;
 }
 
 // export is for tests only
-export function serializeBrowserState(s: BrowserState, paths: PathConfigs<BrowserState>): Partial<Location> {
-  const path = browserStateToPathConfig(s, paths);
+export function serializeBrowserState(paths: PathConfigs<BrowserState>, s: BrowserState): Partial<Location> {
+  const path = browserStateToPathConfig(paths, s);
   const pathState = path.pick(s);
   const pathname = `/${path.serialize(mapValues(pathState, encodeURIComponent))}`;
   const search = `?${qs.stringify(omit(s, Object.keys(pathState)))}`; // will encode URI by default
@@ -76,7 +76,7 @@ export default function(paths: PathConfigs<BrowserState> = [], history: History 
   let currentPath = locationToPathConfig(paths, history.location);
 
   function syncToBrowser(s: BrowserState, push: boolean = true): void {
-    (push ? history.push : history.replace)(serializeBrowserState(s, paths));
+    (push ? history.push : history.replace)(serializeBrowserState(paths, s));
   }
 
   function onBrowserChange(callback: (s: BrowserState, action: Action) => void): void {
@@ -88,7 +88,7 @@ export default function(paths: PathConfigs<BrowserState> = [], history: History 
   }
 
   function dryRunBrowserTransition<S extends BrowserState>(s: S): S {
-    return cleanupPathParams(s, currentPath, browserStateToPathConfig(s, paths)) as S;
+    return cleanupPathParams(s, currentPath, browserStateToPathConfig(paths, s)) as S;
   }
 
   return { syncToBrowser, onBrowserChange, dryRunBrowserTransition };

@@ -1,4 +1,4 @@
-import mkBrowser, { parseBrowserState, serializeBrowserState } from '../src/browser';
+import mkBrowser, { parseBrowserState, serializeBrowserState, PathConfig } from '../src/browser';
 import createMemoryHistory from 'history/createMemoryHistory';
 import { Location } from 'history';
 
@@ -84,12 +84,10 @@ describe('browser', () => {
     });
   });
 
-  const userDetailPathConfig = {
+  const userDetailPathConfig: PathConfig<any> = {
     serialize: s => `users/${s.userId}`,
-    deserialize: pathname => {
-      const match = pathname.match(/^users\/(\d+)$/);
-      return match ? { view: 'users', userId: match[1] } : null;
-    },
+    match: pathname => pathname.match(/^users\/(\d+)$/),
+    deserialize: match => ({ view: 'users', userId: match[1] }),
     is: ({ view }) => view === 'users',
     pick: s => ({ view: s.view, userId: s.userId })
   };

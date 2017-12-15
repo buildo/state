@@ -8,36 +8,56 @@ import omit = require('lodash/omit');
 import difference = require('lodash/difference');
 
 export type PathConfig<S extends BrowserState> = {
-  deserialize: (pathname: string) => Partial<S> | null;
+  match: (pathname: string) => string[] | null;
+  deserialize: (match: string[]) => Partial<S>;
   serialize: (state: Partial<S>) => string;
   is: (state: S) => boolean;
   pick: (state: S) => Partial<S>;
 };
 export type PathConfigs<S extends BrowserState> = Array<PathConfig<S>>;
 
+export type PathConfigAndMatch<S extends BrowserState> = {
+  path: PathConfig<S>;
+  match: string[];
+};
+
 export type BrowserState = { [k: string]: string } & { view: string };
 
 const defaultNoPath: PathConfig<BrowserState> = {
-  deserialize: (pathname: string) => ({ view: pathname }),
+  match: (pathname: string) => [pathname],
+  deserialize: (match: string[]) => ({ view: match[0] }),
   serialize: ({ view: pathname }: BrowserState) => pathname,
   is: () => true,
   pick: s => ({ view: s.view })
 };
 
-function pathnameToPathConfig(pathname: string, paths: PathConfigs<BrowserState>): PathConfig<BrowserState> {
-  return find(paths, p => Boolean(p.deserialize(pathname))) || defaultNoPath;
+function pathnameToPathConfigAndMatch(
+  pathname: string,
+  paths: PathConfigs<BrowserState>
+): PathConfigAndMatch<BrowserState> {
+  for (let path of paths) {
+    const match = path.match(pathname);
+    if (match) {
+      return { path, match };
+    }
+  }
+  return { path: defaultNoPath, match: [pathname] };
 }
 
 function locationToPathname(location?: Location): string {
   return location ? trim(location.pathname, ' /') : '';
 }
 
-function locationToPathConfig(paths: PathConfigs<BrowserState>, location?: Location): PathConfig<BrowserState> {
-  return pathnameToPathConfig(locationToPathname(location), paths);
+function locationToPathConfigAndMatch(
+  paths: PathConfigs<BrowserState>,
+  location?: Location
+): PathConfigAndMatch<BrowserState> {
+  return pathnameToPathConfigAndMatch(locationToPathname(location), paths);
 }
 
 function parsePathname(paths: PathConfigs<BrowserState>, location?: Location): Partial<BrowserState> {
-  return locationToPathConfig(paths, location).deserialize(locationToPathname(location))!;
+  const { path, match } = locationToPathConfigAndMatch(paths, location);
+  return path.deserialize(match);
 }
 
 // export is for tests only
@@ -73,7 +93,7 @@ export function serializeBrowserState(paths: PathConfigs<BrowserState>, s: Brows
 }
 
 export default function(paths: PathConfigs<BrowserState> = [], history: History = createBrowserHistory()) {
-  let currentPath = locationToPathConfig(paths, history.location);
+  let currentPath = locationToPathConfigAndMatch(paths, history.location).path;
 
   function syncToBrowser(s: BrowserState, push: boolean = true): void {
     (push ? history.push : history.replace)(serializeBrowserState(paths, s));
@@ -81,7 +101,7 @@ export default function(paths: PathConfigs<BrowserState> = [], history: History 
 
   function onBrowserChange(callback: (s: BrowserState, action: Action) => void): void {
     history.listen((location, action) => {
-      currentPath = locationToPathConfig(paths, location);
+      currentPath = locationToPathConfigAndMatch(paths, location).path;
       callback(parseBrowserState(paths, location), action);
     });
     callback(parseBrowserState(paths, history.location), 'PUSH');

@@ -272,10 +272,8 @@ describe('fullstack', () => {
           {
             is: ({ view }) => view === 'view1',
             serialize: s => `products/${s.foo}`,
-            deserialize: pathname => {
-              const match = pathname.match(/^products\/(\w+)$/);
-              return match ? { view: 'view1', foo: match[1] } : null;
-            },
+            match: pathname => pathname.match(/^products\/(\w+)$/),
+            deserialize: ([_, foo]) => ({ view: 'view1', foo }),
             pick: s => ({ view: s.view, foo: s.foo })
           }
         ]
@@ -297,19 +295,15 @@ describe('fullstack', () => {
           {
             is: ({ view }) => view === 'view1',
             serialize: s => `products/${s.foo}${s.baz ? '/yes' : ''}`,
-            deserialize: pathname => {
-              const match = pathname.match(/^products\/(\w+)\/?(yes)?$/);
-              return match ? { view: 'view1', foo: match[1], baz: match[2] === 'yes' ? 'true' : undefined } : null;
-            },
+            match: pathname => pathname.match(/^products\/(\w+)\/?(yes)?$/),
+            deserialize: ([_, foo, baz]) => ({ view: 'view1', foo, baz: baz === 'yes' ? 'true' : undefined }),
             pick: s => ({ view: s.view, foo: s.foo, baz: s.baz })
           },
           {
             is: ({ view }) => view === 'view2',
             serialize: s => `users/${s.bar}${s.baz ? '/yes' : ''}`,
-            deserialize: pathname => {
-              const match = pathname.match(/^users\/(\w+)\/?(yes)?$/);
-              return match ? { view: 'view2', bar: match[1], baz: match[2] === 'yes' ? 'true' : undefined } : null;
-            },
+            match: pathname => pathname.match(/^users\/(\w+)\/?(yes)?$/),
+            deserialize: ([_, bar, baz]) => ({ view: 'view2', bar, baz: baz === 'yes' ? 'true' : undefined }),
             pick: s => ({ view: s.view, bar: s.bar, baz: s.baz })
           }
         ]

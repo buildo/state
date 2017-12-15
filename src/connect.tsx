@@ -174,7 +174,7 @@ export default function makeConnect<S extends ST>(stateType: t.Interface<S>): Co
           const props = {
             // state first: connected props are overridable by "actual" (passed) props
             // it's useful for av@queries, av@commands
-            ...this.state as any, // TODO(typo): spread types can only be created from object types
+            ...(this.state as any), // TODO(typo): spread types can only be created from object types
             ...omit(this.props as any, killProps), // TODO(typo): spread types can only be created from object types
             transition: this.context.transition
           };
@@ -184,7 +184,7 @@ export default function makeConnect<S extends ST>(stateType: t.Interface<S>): Co
     };
 
     (decorator as ConnectDeclaration<S, Decl>).Type = {
-      ...pick(stateType.meta.props, decl) as any, // TODO(typo): ugh
+      ...(pick(stateType.meta.props, decl) as any), // TODO(typo): ugh
       transition: t.Function
     };
     return decorator as ConnectDeclaration<S, Decl>;

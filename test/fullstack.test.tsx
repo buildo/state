@@ -10,47 +10,38 @@ type State = {
   view: 'view1' | 'view2';
   foo?: string;
   bar?: number;
+  baz?: boolean;
 };
 const State = t.interface<State>(
   {
     view: t.enums.of(['view1', 'view2']),
     foo: t.maybe(t.String),
-    bar: t.maybe(t.Number)
+    bar: t.maybe(t.Number),
+    baz: t.maybe(t.Boolean)
   },
   { strict: true }
 );
 
 class RenderState extends React.Component<Partial<State>> {
   render() {
-    return (
-      <div>
-        {JSON.stringify(this.props)}
-      </div>
-    );
+    return <div>{JSON.stringify(this.props)}</div>;
   }
 }
 
-const snapshot = (Provider, App) =>
-  renderer
-    .create(
-      <Provider>
-        {() => <App />}
-      </Provider>
-    )
-    .toJSON();
+const snapshot = (Provider, App) => renderer.create(<Provider>{() => <App />}</Provider>).toJSON();
 
 type InitialLocationEntry = string | { pathname: string; search?: string };
-const simpleScenario = (
-  {
-    initialEntries = [],
-    transitionReducer,
-    shouldSerializeKey
-  }: {
-    initialEntries?: InitialLocationEntry[];
-    transitionReducer?: RunParams<State>['transitionReducer'];
-    shouldSerializeKey?: RunParams<State>['shouldSerializeKey'];
-  } = {}
-) => {
+const simpleScenario = ({
+  initialEntries = [],
+  transitionReducer,
+  shouldSerializeKey,
+  paths
+}: {
+  initialEntries?: InitialLocationEntry[];
+  transitionReducer?: RunParams<State>['transitionReducer'];
+  shouldSerializeKey?: RunParams<State>['shouldSerializeKey'];
+  paths?: RunParams<State>['paths'];
+} = {}) => {
   const { run, connect } = make<State>(State);
   const App = connect(['view', 'foo', 'bar'])(RenderState);
   let transition: TransitionFunction<State>;
@@ -66,7 +57,8 @@ const simpleScenario = (
     },
     subscribe: s => {
       states.push(s);
-    }
+    },
+    paths
   }).then(Provider => ({
     transition,
     states,
@@ -257,7 +249,7 @@ describe('fullstack', () => {
         .then(() => resolve(), reject);
     }));
 
-  it('shoud delete from state (and not serialize) any nil-valued key', () =>
+  it('should delete from state (and not serialize) any nil-valued key', () =>
     new Promise((resolve, reject) => {
       return simpleScenario()
         .then(({ transition, states, history }) => {
@@ -269,6 +261,75 @@ describe('fullstack', () => {
           expect(states[states.length - 1].hasOwnProperty('foo')).toBe(false);
           expect(states[states.length - 1].hasOwnProperty('bar')).toBe(false);
           expect(history.location.search).toBe('?');
+        })
+        .then(() => resolve(), reject);
+    }));
+
+  it('should allow to map part of the state on the url pathname part', () =>
+    new Promise((resolve, reject) => {
+      return simpleScenario({
+        paths: [
+          {
+            is: ({ view }) => view === 'view1',
+            serialize: s => `products/${s.foo}`,
+            match: pathname => pathname.match(/^products\/(\w+)$/),
+            deserialize: ([_, foo]) => ({ view: 'view1', foo }),
+            pick: s => ({ view: s.view, foo: s.foo })
+          }
+        ]
+      })
+        .then(({ transition, states, history }) => {
+          transition({ view: 'view1', foo: 'foo' });
+          expect(states[states.length - 1].foo).toBe('foo');
+          expect(states[states.length - 1].view).toBe('view1');
+          expect(history.location.search === '?').toBe(true);
+          expect(history.location.pathname).toBe('/products/foo');
+        })
+        .then(() => resolve(), reject);
+    }));
+
+  it('should properly cleanup previous path params before transitioning to a new path', () =>
+    new Promise((resolve, reject) => {
+      return simpleScenario({
+        paths: [
+          {
+            is: ({ view }) => view === 'view1',
+            serialize: s => `products/${s.foo}${s.baz ? '/yes' : ''}`,
+            match: pathname => pathname.match(/^products\/(\w+)\/?(yes)?$/),
+            deserialize: ([_, foo, baz]) => ({ view: 'view1', foo, baz: baz === 'yes' ? 'true' : undefined }),
+            pick: s => ({ view: s.view, foo: s.foo, baz: s.baz })
+          },
+          {
+            is: ({ view }) => view === 'view2',
+            serialize: s => `users/${s.bar}${s.baz ? '/yes' : ''}`,
+            match: pathname => pathname.match(/^users\/(\w+)\/?(yes)?$/),
+            deserialize: ([_, bar, baz]) => ({ view: 'view2', bar, baz: baz === 'yes' ? 'true' : undefined }),
+            pick: s => ({ view: s.view, bar: s.bar, baz: s.baz })
+          }
+        ]
+      })
+        .then(({ transition, states, history }) => {
+          transition({ view: 'view1', foo: 'foo', baz: true });
+          expect(states[states.length - 1].view).toBe('view1');
+          expect(states[states.length - 1].foo).toBe('foo');
+          expect(states[states.length - 1].bar).toBe(undefined);
+          expect(states[states.length - 1].baz).toBe(true);
+          expect(history.location.pathname).toBe('/products/foo/yes');
+          expect(history.location.search === '?').toBe(true);
+          transition({ view: 'view2', bar: 2 });
+          expect(states[states.length - 1].view).toBe('view2');
+          expect(states[states.length - 1].bar).toBe(2);
+          expect(states[states.length - 1].foo).toBe(undefined);
+          expect(states[states.length - 1].baz).toBe(true);
+          expect(history.location.pathname).toBe('/users/2/yes');
+          expect(history.location.search === '?').toBe(true);
+          transition({ view: 'view1', foo: 'foo' });
+          expect(states[states.length - 1].view).toBe('view1');
+          expect(states[states.length - 1].foo).toBe('foo');
+          expect(states[states.length - 1].bar).toBe(undefined);
+          expect(states[states.length - 1].baz).toBe(true);
+          expect(history.location.pathname).toBe('/products/foo/yes');
+          expect(history.location.search === '?').toBe(true);
         })
         .then(() => resolve(), reject);
     }));

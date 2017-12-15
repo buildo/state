@@ -20,20 +20,11 @@ const { run, connect } = make<State>(State);
 
 class _MyComponent extends React.Component<{ view: State['view'] }> {
   render() {
-    return (
-      <div>
-        {this.props.view}
-      </div>
-    );
+    return <div>{this.props.view}</div>;
   }
 }
 const MyComponent = connect(['view'])(_MyComponent);
 
 run({ initialState: { view: 'foo' } }).then(Provider => {
-  ReactDOM.render(
-    <Provider>
-      {() => <MyComponent />}
-    </Provider>,
-    document.body
-  );
+  ReactDOM.render(<Provider>{() => <MyComponent />}</Provider>, document.body);
 });

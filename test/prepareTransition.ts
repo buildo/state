@@ -20,7 +20,8 @@ export default function<S extends StateT>({
     stateType,
     stateSubject,
     transitionReducer: identity,
-    syncToBrowser: () => {}
+    syncToBrowser: () => {},
+    dryRunBrowserTransition: s => s
   });
   return { states, transition };
 }

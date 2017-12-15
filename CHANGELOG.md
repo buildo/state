@@ -2,6 +2,13 @@
 
 
 
+## [v0.8.3](https://github.com/buildo/state/tree/v0.8.3) (2017-12-15)
+[Full Changelog](https://github.com/buildo/state/compare/v0.8.2...v0.8.3)
+
+#### New features:
+
+- allow defining and parsing nested paths and path params [#42](https://github.com/buildo/state/issues/42)
+
 ## [v0.8.2](https://github.com/buildo/state/tree/v0.8.2) (2017-08-22)
 [Full Changelog](https://github.com/buildo/state/compare/v0.8.1...v0.8.2)
 

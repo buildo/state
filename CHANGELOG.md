@@ -2,6 +2,13 @@
 
 
 
+## [v0.8.4](https://github.com/buildo/state/tree/v0.8.4) (2018-08-28)
+[Full Changelog](https://github.com/buildo/state/compare/v0.8.3...v0.8.4)
+
+#### New features:
+
+- @types should be dev deps [#53](https://github.com/buildo/state/issues/53)
+
 ## [v0.8.3](https://github.com/buildo/state/tree/v0.8.3) (2017-12-15)
 [Full Changelog](https://github.com/buildo/state/compare/v0.8.2...v0.8.3)
 

@@ -10,8 +10,11 @@ import pick = require('lodash/pick');
 import * as t from 'tcomb';
 import shallowEqual from './shallowEqual';
 import { TransitionFunction } from './transition';
-import { ObjectOmit } from 'typelevel-ts';
 import { StateT as ST } from './StateT';
+
+export type StringOmit<L1 extends string, L2 extends string> = ({ [P in L1]: P } &
+  { [P in L2]: never } & { [key: string]: never })[L1];
+export type ObjectOmit<O, K extends string> = Pick<O, StringOmit<keyof O & string, K>>;
 
 declare var process: any; // TODO(typo)
 

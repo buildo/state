@@ -61,18 +61,18 @@ export type ConnectedComponent<P extends {}, Decl extends string> = React.Compon
 export type DecoratedComponent<S extends ST, P extends {}> = React.ComponentType<
   P & { transition?: TransitionFunction<S> }
 >;
-export type ConnectDecorator<S extends ST, Decl extends keyof S> = <P>(
+export type ConnectDecorator<S extends ST, Decl extends keyof S & string> = <P>(
   /**
    * Component to connect.
    * Will be rendered adding the declared keys from state and `transition` as props
    */
   C: DecoratedComponent<S, P>
 ) => ConnectedComponent<P, Decl>;
-export type ConnectDeclaration<S extends ST, Decl extends keyof S> = ConnectDecorator<S, Decl> &
+export type ConnectDeclaration<S extends ST, Decl extends keyof S & string> = ConnectDecorator<S, Decl> &
   ({
     Type: { [k in Decl]: t.Type<any> } & { transition: t.Function1 };
   });
-export type Connect<S extends ST> = <Decl extends keyof S>(
+export type Connect<S extends ST> = <Decl extends keyof S & string>(
   /**
    * Keys of State to be connected and passed to this container
    */
@@ -87,7 +87,7 @@ export type Connect<S extends ST> = <Decl extends keyof S>(
 export default function makeConnect<S extends ST>(stateType: t.Interface<S>): Connect<S> {
   // expects a list of keys to connect from state
   // and an optional configuration object
-  return function connectDeclaration<Decl extends keyof S>(
+  return function connectDeclaration<Decl extends keyof S & string>(
     decl: Decl[] = [],
     {
       pure = true,
@@ -134,7 +134,7 @@ export default function makeConnect<S extends ST>(stateType: t.Interface<S>): Co
         state: BehaviorSubject<S>;
         transition: TransitionFunction<S>;
       };
-      type StateT<S extends ST, Decl extends keyof S> = { [k in Decl]: S[k] } | {};
+      type StateT<S extends ST, Decl extends keyof S & string> = { [k in Decl]: S[k] } | {};
       return class ConnectWrapper extends React.Component<ConnectedComponentProps<P, Decl>, StateT<S, Decl>> {
         static contextTypes = ConnectContextTypes;
 

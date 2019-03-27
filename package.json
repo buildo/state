@@ -1,6 +1,6 @@
 {
   "name": "buildo-state",
-  "version": "0.8.4",
+  "version": "0.8.5",
   "description": "State container for react apps with provider and connect HOCs",
   "main": "lib",
   "files": [

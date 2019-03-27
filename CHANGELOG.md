@@ -2,6 +2,9 @@
 
 
 
+## [v0.8.5](https://github.com/buildo/state/tree/v0.8.5) (2019-03-27)
+[Full Changelog](https://github.com/buildo/state/compare/v0.8.4...v0.8.5)
+
 ## [v0.8.4](https://github.com/buildo/state/tree/v0.8.4) (2018-08-28)
 [Full Changelog](https://github.com/buildo/state/compare/v0.8.3...v0.8.4)
 

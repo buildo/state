@@ -139,7 +139,7 @@ export default stateType => ({
   //   React.render(element, mountNode);
   // }
   //
-  // (element: ReactElement) => void
+  // (element: ReactElement, ProvideWrapper, Provider) => void
   //
   render, // required
 
@@ -274,7 +274,9 @@ export default stateType => ({
     render(
       <ProvideWrapper>
         {() => <Provider>{renderElement}</Provider>}
-      </ProvideWrapper>
+      </ProvideWrapper>,
+      ProvideWrapper,
+      Provider
     );
     /* eslint-enable react/display-name */
   });

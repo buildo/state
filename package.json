@@ -28,7 +28,7 @@
   "homepage": "https://github.com/buildo/state#readme",
   "dependencies": {
     "history": "4.6.3",
-    "lodash": "4.17.4",
+    "lodash": "4.17.15",
     "prop-types": "15.5.10",
     "qs": "6.5.1",
     "rxjs": "5.4.2",
